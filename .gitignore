@@ -6,3 +6,7 @@ build/
 dist/
 .venv/
 .DS_Store
+
+# Internal planning notes, kept out of the public mirror
+AIKOSH_SUBMISSION_METADATA.md
+DISCOVERY.md
