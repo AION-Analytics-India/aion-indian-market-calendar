@@ -95,3 +95,7 @@ Information, not advice.
 
 If this saves you an afternoon of exchange-timing edge cases, a star is
 appreciated.
+
+---
+
+**We're hiring a communication architect.** We don't read CVs — we read code. The challenge *is* the application: read this package, then explain it to someone who has never heard of us. [The full challenge](https://dashboard.aiondashboard.site/careers).
