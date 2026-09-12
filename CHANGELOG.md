@@ -26,6 +26,30 @@ source elsewhere.
 Four tests covering the removed path are deleted with it, with a note in
 `tests/test_calendar.py` recording what they covered and why.
 
+### Security — the taxonomy fetch now requires a hash
+
+Found while auditing the removal above. The taxonomy manifesto path checked a
+file's SHA-256 **only if the manifest supplied one**: `if expected_hash and ...`.
+Omit the field and verification was skipped entirely. The thing being verified
+decided whether to be verified — and that is precisely the route the 2026-06-26
+incident took, a manifest with no `sha256` writing a 105-byte delta over a 117 KB
+taxonomy. The structural guard added at the time covered a single filename; any
+other `.yaml` without a hash was written unverified.
+
+A missing hash is now a refusal. Writes are also deferred until every file in
+the batch verifies, so a failure on the third no longer leaves the first two on
+disk.
+
+**Not believed exploited, and not reachable by default.** It required a caller to
+pass `taxonomy_manifesto_url`, or to have had `refresh_url` set — and removing
+the legacy refresh above means nothing internal calls this path any more.
+`refresh_taxonomy_manifesto()` remains public, so it is hardened rather than
+deleted.
+
+*(An earlier note in this session described this as write-then-verify. That was
+wrong: the mismatch check did precede the write. The defect was that the check
+was optional.)*
+
 ### Fixed
 
 - `HTTP Error 404: Not Found` no longer appears in the logs of anyone who passed

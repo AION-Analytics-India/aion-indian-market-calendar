@@ -630,6 +630,10 @@ class IndiaMarketCalendar:
 
         cache_dir = self._taxonomy_cache_dir()
         downloaded: list[str] = []
+        # Verify everything, then write. Writing each file as it verified meant a
+        # failure on the third left the first two already on disk -- partial
+        # adoption, which is the failure the calendar store's staging avoids.
+        staged: list[tuple[Path, bytes]] = []
         for item in files:
             if not isinstance(item, dict):
                 continue
@@ -637,21 +641,36 @@ class IndiaMarketCalendar:
             if not name.endswith((".yaml", ".yml")):
                 continue
             expected_hash = str(item.get("sha256") or "").strip()
-            path = str(item.get("path") or f"/taxonomy/{name}")
-            file_url = urljoin(manifesto_url, path)
-            payload = self._fetch_bytes(file_url)
+            # ── A hash is mandatory (hardened 1.4.1) ────────────────────────
+            # It used to be `if expected_hash and ...`, which meant the check
+            # ran only when the remote chose to supply one. The thing being
+            # verified decided whether to be verified, and omitting the field
+            # was enough to skip it entirely -- which is exactly how the
+            # 2026-06-26 incident happened: a manifest with no sha256 wrote a
+            # 105-byte delta over a 117 KB taxonomy and wiped the sector engine.
+            #
+            # The structural guard added at the time covered one filename. Any
+            # other .yaml with no hash was written unverified.
+            if not expected_hash:
+                raise ValueError(
+                    f"Refusing {name}: the manifest supplies no sha256. Every file "
+                    f"must carry one; a manifest that omits it cannot be trusted to "
+                    f"say which files need checking (incident 2026-06-26)."
+                )
+            payload = self._fetch_bytes(file_url := urljoin(
+                manifesto_url, str(item.get("path") or f"/taxonomy/{name}")))
             actual_hash = self._sha256_bytes(payload)
-            if expected_hash and actual_hash != expected_hash:
+            if actual_hash != expected_hash:
                 raise ValueError(f"SHA-256 mismatch for {name}: expected {expected_hash}, got {actual_hash}")
-            # ── Content guard (incident 2026-06-26) ──────────────────────────
-            # A refresh whose manifest carried NO sha256 once wrote a 105-byte
-            # live-events delta over taxonomy_india_v2_calibrated.yaml, wiping the
-            # IMI taxonomy. When there is no hash to verify, refuse to write a
-            # taxonomy file unless the payload is *structurally a taxonomy*.
-            if not expected_hash and name == "taxonomy_india_v2_calibrated.yaml":
+            # Second line, kept because it costs nothing: a correctly-hashed file
+            # is the one the manifest named, but the manifest itself is unsigned.
+            if name == "taxonomy_india_v2_calibrated.yaml":
                 _assert_payload_is_taxonomy(name, payload)
-            (cache_dir / name).write_bytes(payload)
+            staged.append((cache_dir / name, payload))
             downloaded.append(name)
+
+        for target, payload in staged:
+            target.write_bytes(payload)
 
         taxonomy_file = str(manifesto.get("taxonomy_file") or "taxonomy_india_v2_calibrated.yaml")
         if str(manifesto.get("signature") or ""):
