@@ -1,5 +1,62 @@
 # Changelog
 
+## 1.4.1 — unreleased
+
+### Removed — the legacy live-events refresh
+
+`refresh_url` and the machinery behind it are gone. That path fetched from
+whatever URL it was given, merged the result straight into live answers, and
+cached it to `~/.aion_indian_market/live_cache.json` — **with no integrity check
+of any kind**. Its default endpoint had returned 404 since before 1.4.0, so in
+practice it logged an error and did nothing, which is why it survived this long
+unnoticed.
+
+In 1.4.0 that was cosmetic: it could not reach or corrupt the hash-verified
+holiday data, which lives in a different directory entirely, so the only symptom
+was a confusing `HTTP Error 404` in the logs when a caller passed the old URL.
+It is removed anyway. A code path that accepts unverified remote data into live
+answers is not worth the compatibility it buys, least of all in a package whose
+point since 1.4.0 is that data is verified before it is trusted.
+
+`refresh()` remains and is documented; it now refreshes the hash-verified dataset
+and returns whether anything changed. `refresh_url` is still accepted as a
+constructor argument and ignored. Use `AION_IN_CALENDAR_URL` to point the data
+source elsewhere.
+
+Four tests covering the removed path are deleted with it, with a note in
+`tests/test_calendar.py` recording what they covered and why.
+
+### Security — the taxonomy fetch now requires a hash
+
+Found while auditing the removal above. The taxonomy manifesto path checked a
+file's SHA-256 **only if the manifest supplied one**: `if expected_hash and ...`.
+Omit the field and verification was skipped entirely. The thing being verified
+decided whether to be verified — and that is precisely the route the 2026-06-26
+incident took, a manifest with no `sha256` writing a 105-byte delta over a 117 KB
+taxonomy. The structural guard added at the time covered a single filename; any
+other `.yaml` without a hash was written unverified.
+
+A missing hash is now a refusal. Writes are also deferred until every file in
+the batch verifies, so a failure on the third no longer leaves the first two on
+disk.
+
+**Not believed exploited, and not reachable by default.** It required a caller to
+pass `taxonomy_manifesto_url`, or to have had `refresh_url` set — and removing
+the legacy refresh above means nothing internal calls this path any more.
+`refresh_taxonomy_manifesto()` remains public, so it is hardened rather than
+deleted.
+
+*(An earlier note in this session described this as write-then-verify. That was
+wrong: the mismatch check did precede the write. The defect was that the check
+was optional.)*
+
+### Fixed
+
+- `HTTP Error 404: Not Found` no longer appears in the logs of anyone who passed
+  the old refresh URL. Listed under *Known issues* in 1.4.0.
+
+---
+
 ## 1.4.0 — 2026-09-12
 
 Two things in this release matter more than the features: telemetry is gone, and
@@ -85,6 +142,15 @@ both are rejected.
   rather than silently giving up on updates.
 - The scheduled NSE poller is deprecated. It wrote to an endpoint that no longer
   exists; maintenance now runs through the ingestion tool in the data repository.
+
+### Known issues (fixed in 1.4.1)
+
+- Passing the old `refresh_url` explicitly makes the legacy path fire and log
+  `HTTP Error 404: Not Found`. **Cosmetic.** That path writes to
+  `~/.aion_indian_market/live_cache.json` and reads nothing from the
+  hash-verified store, which lives in a separate directory, so it cannot
+  override bundled data or bypass verification. Verified by inspection of both
+  code paths. Removed entirely in 1.4.1.
 
 ### Unchanged
 

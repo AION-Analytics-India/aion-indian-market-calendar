@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aion-indian-market-calendar"
-version = "1.4.0"
+version = "1.4.1"
 description = "Indian market calendar Python package for NSE market calendar checks, MCX trading calendar handling, India trading holidays API workflows, Muhurat trading calendar API queries, and market open India Python validation."
 readme = "README.md"
 requires-python = ">=3.10"

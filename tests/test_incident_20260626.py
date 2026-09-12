@@ -114,3 +114,54 @@ def test_the_structural_guard_is_still_present():
     from aion_indian_market_calendar.calendar import _assert_payload_is_taxonomy
     with pytest.raises(ValueError, match="2026-06-26"):
         _assert_payload_is_taxonomy("taxonomy.yaml", json.dumps(INCIDENT_DELTA).encode())
+
+
+# --------------------------------------------------------------------------
+# The taxonomy path, hardened in 1.4.1.
+#
+# The incident was on this path, not the calendar data one, and the guard added
+# at the time left the door it came through open: the hash check ran only `if
+# expected_hash`, so a manifest that omitted the field skipped verification
+# entirely. The thing being verified decided whether to be verified.
+# --------------------------------------------------------------------------
+
+def test_a_manifest_without_a_hash_is_refused(tmp_path, monkeypatch):
+    """Omitting sha256 used to skip verification. It is now a refusal."""
+    from aion_indian_market_calendar.calendar import IndiaMarketCalendar
+
+    cal = IndiaMarketCalendar()
+    monkeypatch.setattr(cal, "_taxonomy_cache_dir", lambda: tmp_path)
+    monkeypatch.setattr(cal, "_fetch_bytes", lambda url: json.dumps(INCIDENT_DELTA).encode())
+
+    manifesto = {
+        "version": "v9",
+        "files": [{"name": "some_other_table.yaml", "path": "/taxonomy/x.yaml"}],
+    }
+    with pytest.raises(ValueError, match="no sha256"):
+        cal._download_taxonomy_manifesto_update("https://example.invalid/m.json", manifesto)
+    assert not list(tmp_path.iterdir()), "nothing may be written when verification is refused"
+
+
+def test_nothing_is_written_until_every_file_verifies(tmp_path, monkeypatch):
+    """Writing each file as it verified left earlier ones on disk when a later
+    one failed -- partial adoption, the failure staging exists to prevent."""
+    import hashlib
+
+    from aion_indian_market_calendar.calendar import IndiaMarketCalendar
+
+    good = b"metadata:\n  x: 1\nconfig:\n  y: 2\nsectors: []\ncategories: []\n" + b"#pad\n" * 3000
+    cal = IndiaMarketCalendar()
+    monkeypatch.setattr(cal, "_taxonomy_cache_dir", lambda: tmp_path)
+    monkeypatch.setattr(cal, "_fetch_bytes", lambda url: good)
+
+    manifesto = {"version": "v9", "files": [
+        {"name": "first.yaml", "path": "/t/first.yaml",
+         "sha256": hashlib.sha256(good).hexdigest()},          # verifies
+        {"name": "second.yaml", "path": "/t/second.yaml",
+         "sha256": "0" * 64},                                   # does not
+    ]}
+    with pytest.raises(ValueError, match="SHA-256 mismatch"):
+        cal._download_taxonomy_manifesto_update("https://example.invalid/m.json", manifesto)
+    assert not list(tmp_path.iterdir()), (
+        "first.yaml verified and must still not be on disk: the batch failed"
+    )
