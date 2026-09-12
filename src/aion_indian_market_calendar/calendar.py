@@ -26,6 +26,10 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
+#: The year the default constructor loads. Bundled data covers this; the store
+#: may carry more after a refresh.
+_DEFAULT_DATA_YEAR = 2026
+
 # ── Taxonomy write guard (incident 2026-06-26) ──────────────────────────────
 _TAXONOMY_REQUIRED_KEYS = ("metadata", "config", "sectors", "categories")
 _TAXONOMY_MIN_BYTES = 10 * 1024  # a real taxonomy is ~117 KB
@@ -54,15 +58,9 @@ def _assert_payload_is_taxonomy(name: str, payload: bytes) -> None:
             "content (incident 2026-06-26)."
         )
 
+from . import store  # noqa: E402  (after logger, which store uses)
+
 PACKAGE_NAME = "aion-indian-market-calendar"
-AION_TELEMETRY_HOSTS: frozenset[str] = frozenset(
-    {
-        "aiondashboard.site",
-        "dashboard.aiondashboard.site",
-        "api.aiondashboard.site",
-    }
-)
-TELEMETRY_OPT_OUT_VALUES: frozenset[str] = frozenset({"0", "false", "no", "off", "disabled"})
 
 
 def _package_version() -> str:
@@ -321,10 +319,17 @@ class IndiaMarketCalendar:
     ):
         if _raw is None:
             if events_json_path is None:
-                data = pkgutil.get_data(__package__, "data/events_2026.json")
-                if data is None:
-                    raise FileNotFoundError("Bundled calendar data/events_2026.json not found")
-                raw = json.loads(data.decode("utf-8"))
+                # Refreshed data if there is any, bundled otherwise. The store
+                # verifies a SHA-256 per file before adopting anything and falls
+                # back to the bundled copy on any failure, so this cannot end up
+                # serving something unverified.
+                raw = store.payload_for(_DEFAULT_DATA_YEAR)
+                if raw is None:
+                    data = pkgutil.get_data(__package__, f"data/holidays_{_DEFAULT_DATA_YEAR}.json")
+                    if data is None:
+                        raise FileNotFoundError(
+                            f"Bundled calendar data/holidays_{_DEFAULT_DATA_YEAR}.json not found")
+                    raw = json.loads(data.decode("utf-8"))
             else:
                 raw = json.loads(Path(events_json_path).read_text(encoding="utf-8"))
         else:
@@ -349,7 +354,13 @@ class IndiaMarketCalendar:
         )
         self.refresh_url = refresh_url
         self.refresh_interval = timedelta(hours=refresh_interval_hours)
-        self.telemetry = telemetry
+        # Accepted and ignored since 1.4.0. The keyword stays so code written
+        # against 1.3.x keeps working -- including anyone who passed
+        # telemetry=False to turn it off. There is nothing left for it to
+        # control; see docs/TELEMETRY_AUDIT.md.
+        self.telemetry = None
+        if telemetry is not None:
+            logger.debug("'telemetry' is ignored from 1.4.0: telemetry was removed.")
         self.taxonomy_manifesto_url = taxonomy_manifesto_url
         self.taxonomy_refresh_enabled = taxonomy_refresh_enabled
         self._last_refreshed: datetime | None = None
@@ -416,9 +427,11 @@ class IndiaMarketCalendar:
         taxonomy_manifesto_url: str | None = None,
         taxonomy_refresh_enabled: bool = True,
     ) -> "IndiaMarketCalendar":
-        data = pkgutil.get_data(__package__, f"data/events_{year}.json")
+        raw_payload = store.payload_for(year)
+        data = (json.dumps(raw_payload).encode("utf-8") if raw_payload is not None
+                else pkgutil.get_data(__package__, f"data/holidays_{year}.json"))
         if data is None:
-            raise FileNotFoundError(f"Bundled calendar data/events_{year}.json not found")
+            raise FileNotFoundError(f"Bundled calendar data/holidays_{year}.json not found")
         return cls(
             refresh_url=refresh_url,
             refresh_interval_hours=refresh_interval_hours,
@@ -523,10 +536,6 @@ class IndiaMarketCalendar:
         base.mkdir(parents=True, exist_ok=True)
         return base / "live_cache.json"
 
-    def _telemetry_path(self) -> Path:
-        base = Path(os.path.expanduser("~")) / ".aion_indian_market"
-        base.mkdir(parents=True, exist_ok=True)
-        return base / "telemetry.json"
 
     def _taxonomy_cache_dir(self) -> Path:
         base = Path(os.getenv("AION_IMI_TAXONOMY_CACHE_DIR", "")).expanduser() if os.getenv("AION_IMI_TAXONOMY_CACHE_DIR") else Path(os.path.expanduser("~")) / ".aion_indian_market" / "taxonomy"
@@ -536,62 +545,30 @@ class IndiaMarketCalendar:
     def _taxonomy_manifesto_cache_path(self) -> Path:
         return self._taxonomy_cache_dir() / "taxonomy_manifesto.json"
 
-    def _refresh_host_is_aion_owned(self) -> bool:
-        try:
-            host = str(urlparse(self.refresh_url or "").hostname or "").strip().lower()
-        except Exception:
-            return False
-        return host in AION_TELEMETRY_HOSTS or host.endswith(".aiondashboard.site")
 
-    def _telemetry_enabled(self) -> bool:
-        env_value = str(os.getenv("AION_CALENDAR_TELEMETRY", "")).strip().lower()
-        if env_value in TELEMETRY_OPT_OUT_VALUES:
-            return False
-        if self.telemetry is False:
-            return False
-        if not self.refresh_url:
-            return False
-        # Never leak an AION install identifier to arbitrary third-party refresh URLs.
-        return self._refresh_host_is_aion_owned()
 
-    def _anonymous_install_id(self) -> str:
-        path = self._telemetry_path()
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-            install_id = str(payload.get("install_id") or "").strip()
-            if install_id:
-                return install_id
-        except Exception:
-            pass
-
-        install_id = uuid.uuid4().hex
-        payload = {
-            "install_id": install_id,
-            "created_at": self._now().isoformat(),
-            "scope": "anonymous_live_refresh_usage",
-        }
-        try:
-            path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        except Exception as exc:
-            logger.debug("Could not persist anonymous calendar install id: %s", exc)
-        return install_id
 
     def _refresh_headers(self) -> dict[str, str]:
-        version = _package_version()
-        headers = {
-            "User-Agent": f"{PACKAGE_NAME}/{version}",
-        }
-        if self._telemetry_enabled():
-            headers.update(
-                {
-                    "X-AION-Calendar-Telemetry": "live-refresh",
-                    "X-AION-Calendar-Install": self._anonymous_install_id(),
-                    "X-AION-Calendar-Version": version,
-                    "X-AION-Calendar-Python": platform.python_version(),
-                    "X-AION-Calendar-System": platform.system(),
-                }
-            )
-        return headers
+        """Headers for a data fetch. A User-Agent and nothing else.
+
+        Until 1.4.0 this also sent ``X-AION-Calendar-Install`` -- a UUID4 written
+        to ``~/.aion_indian_market/telemetry.json`` and reused for the life of the
+        machine -- along with the package version, the Python version and the
+        operating system, on every refresh against an AION-owned host.
+
+        That is a persistent pseudonymous identifier. Combined with the source IP
+        that any HTTP request necessarily reveals, it let one installation be
+        followed over time. The old source called it anonymous; it was not, and
+        it contradicted the published privacy position.
+
+        Removed entirely rather than defaulted off, because a code path that can
+        send an identifier is a liability in a published wheel even when it never
+        fires. See ``docs/TELEMETRY_AUDIT.md``.
+
+        The User-Agent stays: every HTTP client sends one, and a library that
+        lies about what it is makes an operator's job harder for no gain.
+        """
+        return {"User-Agent": f"{PACKAGE_NAME}/{_package_version()}"}
 
     def _effective_taxonomy_manifesto_url(self) -> str | None:
         if self.taxonomy_manifesto_url:

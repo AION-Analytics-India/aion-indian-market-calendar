@@ -671,111 +671,22 @@ def test_malformed_live_session_rules_do_not_break_the_refresh(monkeypatch, samp
     assert "live-2026-08-05" in {event.id for event in calendar.all_events()}
 
 
-def test_refresh_does_not_send_telemetry_to_third_party_url(monkeypatch, sample_records, tmp_path):
-    live_payload = {
-        "version": "20260512-001",
-        "generated_at": "2026-05-12T10:00:00+05:30",
-        "events": [],
-        "deleted_ids": [],
-    }
-    captured_headers = {}
-
-    class FakeResponse(BytesIO):
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            self.close()
-            return False
-
-    def fake_urlopen(request, timeout=10):
-        captured_headers.update(dict(request.header_items()))
-        return FakeResponse(json.dumps(live_payload).encode("utf-8"))
-
-    monkeypatch.setattr(calendar_module, "urlopen", fake_urlopen)
-    monkeypatch.setattr(calendar_module.IndiaMarketCalendar, "_cache_path", lambda self: tmp_path / "live_cache.json")
-    monkeypatch.setattr(calendar_module.IndiaMarketCalendar, "_telemetry_path", lambda self: tmp_path / "telemetry.json")
-
-    EventCalendar.from_records(
-        sample_records,
-        refresh_url="https://example.com/live_events.json",
-        refresh_interval_hours=4,
-    )
-
-    lowered_headers = {key.lower(): value for key, value in captured_headers.items()}
-    assert lowered_headers["user-agent"].startswith("aion-indian-market-calendar/")
-    assert "x-aion-calendar-install" not in lowered_headers
-    assert not (tmp_path / "telemetry.json").exists()
 
 
-def test_refresh_sends_anonymous_telemetry_to_aion_url(monkeypatch, sample_records, tmp_path):
-    live_payload = {
-        "version": "20260512-001",
-        "generated_at": "2026-05-12T10:00:00+05:30",
-        "events": [],
-        "deleted_ids": [],
-    }
-    captured_headers = {}
-
-    class FakeResponse(BytesIO):
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            self.close()
-            return False
-
-    def fake_urlopen(request, timeout=10):
-        captured_headers.update({key.lower(): value for key, value in request.header_items()})
-        return FakeResponse(json.dumps(live_payload).encode("utf-8"))
-
-    monkeypatch.setattr(calendar_module, "urlopen", fake_urlopen)
-    monkeypatch.setattr(calendar_module.IndiaMarketCalendar, "_cache_path", lambda self: tmp_path / "live_cache.json")
-    monkeypatch.setattr(calendar_module.IndiaMarketCalendar, "_telemetry_path", lambda self: tmp_path / "telemetry.json")
-
-    EventCalendar.from_records(
-        sample_records,
-        refresh_url="https://dashboard.aiondashboard.site/calendar/live_events.json",
-        refresh_interval_hours=4,
-    )
-
-    assert captured_headers["x-aion-calendar-telemetry"] == "live-refresh"
-    assert len(captured_headers["x-aion-calendar-install"]) == 32
-    assert captured_headers["x-aion-calendar-version"]
-    assert (tmp_path / "telemetry.json").exists()
 
 
-def test_refresh_telemetry_can_be_disabled(monkeypatch, sample_records, tmp_path):
-    live_payload = {
-        "version": "20260512-001",
-        "generated_at": "2026-05-12T10:00:00+05:30",
-        "events": [],
-        "deleted_ids": [],
-    }
-    captured_headers = {}
 
-    class FakeResponse(BytesIO):
-        def __enter__(self):
-            return self
 
-        def __exit__(self, exc_type, exc, tb):
-            self.close()
-            return False
-
-    def fake_urlopen(request, timeout=10):
-        captured_headers.update({key.lower(): value for key, value in request.header_items()})
-        return FakeResponse(json.dumps(live_payload).encode("utf-8"))
-
-    monkeypatch.setenv("AION_CALENDAR_TELEMETRY", "0")
-    monkeypatch.setattr(calendar_module, "urlopen", fake_urlopen)
-    monkeypatch.setattr(calendar_module.IndiaMarketCalendar, "_cache_path", lambda self: tmp_path / "live_cache.json")
-    monkeypatch.setattr(calendar_module.IndiaMarketCalendar, "_telemetry_path", lambda self: tmp_path / "telemetry.json")
-
-    EventCalendar.from_records(
-        sample_records,
-        refresh_url="https://dashboard.aiondashboard.site/calendar/live_events.json",
-        refresh_interval_hours=4,
-    )
-
-    assert "x-aion-calendar-install" not in captured_headers
-    assert not (tmp_path / "telemetry.json").exists()
+# The three telemetry tests that stood here until 1.4.0 have been deleted along
+# with the feature they covered. They asserted that a refresh against an
+# AION-owned host sent X-AION-Calendar-Install -- a UUID4 persisted to the user's
+# home directory and reused for the life of the machine -- and that it was not
+# sent to third-party hosts.
+#
+# They are worth a note rather than a silent deletion, because their existence
+# shows the identifier was deliberate and tested rather than accidental. What
+# replaces them is tests/test_no_telemetry.py, which asserts the opposite: that
+# no such header can be produced, that no identifier file is written, and that
+# the helper functions are gone from the source.
+#
+# See docs/TELEMETRY_AUDIT.md.

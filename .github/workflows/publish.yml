@@ -1,0 +1,76 @@
+name: publish
+
+# Tag-triggered. Nothing publishes from a laptop: a wheel built by hand is a
+# wheel nobody can audit, and an API token on a developer machine is a token
+# that leaks. Trusted publishing (OIDC) means PyPI verifies the workflow itself,
+# and there is no secret to steal.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows is not optional: it has no system tz database, so a missing
+        # tzdata dependency breaks every session check there and passes
+        # everywhere else.
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.9", "3.11", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ matrix.python }}" }
+      - run: pip install -e ".[dev]" || pip install -e . pytest
+      - name: Tests
+        run: pytest -q
+        env:
+          AION_IN_CALENDAR_OFFLINE: "1"
+
+  no-egress:
+    # Run on its own so it cannot be lost in a matrix summary. This is the test
+    # that keeps telemetry gone; if it fails, the release must not happen.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+      - run: pip install -e . pytest
+      - name: Nothing reaches the network unless a refresh was asked for
+        run: pytest tests/test_no_egress.py -q
+      - name: No identifier header anywhere in the source
+        run: |
+          if grep -rnE 'X-AION-[A-Za-z-]*(Install|Telemetry)' src/ --include='*.py' \
+             | grep -v '^\s*#' | grep -vi 'docstring'; then
+            echo "an identifier header appears in source"; exit 1
+          fi
+          echo "clean"
+
+  build:
+    needs: [test, no-egress]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+      - run: pip install build twine
+      - run: python -m build
+      - run: twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with: { name: dist, path: dist/ }
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write          # the OIDC token PyPI verifies. No API token.
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist/ }
+      - uses: pypa/gh-action-pypi-publish@release/v1
