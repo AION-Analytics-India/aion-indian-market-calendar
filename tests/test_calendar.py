@@ -168,65 +168,6 @@ def test_next_trading_day_helper():
     assert next_trading_day("NSE_EQUITY", after="2026-01-26T10:00:00+05:30") == date(2026, 1, 27)
 
 
-def test_refresh_from_url_merges_and_deletes(monkeypatch, sample_records, tmp_path):
-    live_payload = {
-        "version": "20260430-001",
-        "generated_at": "2026-04-30T10:00:00+05:30",
-        "events": [
-            {
-                "id": "policy-2026-02-06",
-                "name": "RBI Monetary Policy Statement (Updated)",
-                "category": "macro",
-                "impact": "HIGH",
-                "applies_to": ["NSE"],
-                "start": "2026-02-06T11:00:00+05:30",
-                "end": "2026-02-06T12:00:00+05:30",
-                "policy": {"action": "NO_NEW_TRADES", "reason": "Updated from live feed"},
-            },
-            {
-                "id": "live-2026-05-12",
-                "name": "Exchange Holiday: State Election",
-                "category": "EXCHANGE_HOLIDAY",
-                "impact": "EXTREME",
-                "applies_to": ["NSE"],
-                "start": "2026-05-12T00:00:00+05:30",
-                "end": "2026-05-12T23:59:59+05:30",
-                "policy": {"action": "NO_NEW_TRADES", "reason": "State election day"},
-            },
-        ],
-        "deleted_ids": ["earnings-2026-02-10"],
-    }
-
-    class FakeResponse(BytesIO):
-        def __enter__(self):
-            return self
-
-        def __exit__(self, exc_type, exc, tb):
-            self.close()
-            return False
-
-    monkeypatch.setattr(
-        calendar_module,
-        "urlopen",
-        lambda request, timeout=10: FakeResponse(json.dumps(live_payload).encode("utf-8")),
-    )
-    monkeypatch.setattr(calendar_module.IndiaMarketCalendar, "_cache_path", lambda self: tmp_path / "live_cache.json")
-
-    calendar = EventCalendar.from_records(
-        sample_records,
-        refresh_url="https://example.com/live_events.json",
-        refresh_interval_hours=4,
-    )
-
-    all_ids = {event.id for event in calendar.all_events()}
-    assert "live-2026-05-12" in all_ids
-    assert "earnings-2026-02-10" not in all_ids
-
-    updated = next(event for event in calendar.all_events() if event.id == "policy-2026-02-06")
-    assert updated.name == "RBI Monetary Policy Statement (Updated)"
-    assert updated.policy.reason == "Updated from live feed"
-    assert calendar._live_deleted_ids == {"earnings-2026-02-10"}
-    assert calendar._live_version == "20260430-001"
 
 
 @pytest.mark.parametrize(
@@ -558,117 +499,10 @@ def _fake_refresh(monkeypatch, tmp_path, payload):
     monkeypatch.setattr(calendar_module.IndiaMarketCalendar, "_cache_path", lambda self: tmp_path / "live_cache.json")
 
 
-def test_live_refresh_delivers_a_session_rule_to_an_installed_package(monkeypatch, sample_records, tmp_path):
-    """Timing regime changes must reach installs that never upgrade the package."""
-    live_payload = {
-        "version": "20260801-001",
-        "generated_at": "2026-08-01T10:00:00+05:30",
-        "events": [],
-        "deleted_ids": [],
-        "session_rules": {
-            "NSE_EQUITY_DERIVATIVES": [
-                {
-                    "effective_from": "2026-08-03",
-                    "segments": [{"open": "09:15:00", "close": "15:45:00"}],
-                    "reason": "Revised by a later circular",
-                }
-            ],
-            # Keyed by the "BSE" alias, to prove alias resolution on the wire.
-            "BSE": [
-                {
-                    "effective_from": "2026-08-03",
-                    "segments": [
-                        {"open": "09:15:00", "close": "15:15:00"},
-                        {"open": "15:15:00", "close": "15:35:00", "kind": "closing_auction"},
-                    ],
-                }
-            ],
-        },
-    }
-    _fake_refresh(monkeypatch, tmp_path, live_payload)
-
-    calendar = EventCalendar.from_records(
-        sample_records,
-        refresh_url="https://example.com/live_events.json",
-        refresh_interval_hours=4,
-    )
-
-    probe = datetime(2026, 8, 3, 10, 0)
-    # The live rule supersedes the built-in 15:40 rule.
-    assert [s.close.isoformat() for s in calendar.get_session(probe, market="NSE_EQUITY_DERIVATIVES")] == ["15:45:00"]
-    # A market with no built-in rule picks one up from the wire, via its alias.
-    assert [
-        (s.close.isoformat(), s.kind) for s in calendar.get_session(probe, market="BSE_EQUITY")
-    ] == [("15:15:00", "continuous"), ("15:35:00", "closing_auction")]
-    # Untouched markets keep their built-in rule.
-    assert [
-        s.close.isoformat() for s in calendar.get_session(probe, market="NSE_EQUITY_FNO_UNDERLYING")
-    ] == ["15:15:00", "15:35:00"]
 
 
-def test_cached_session_rules_survive_an_offline_restart(monkeypatch, sample_records, tmp_path):
-    live_payload = {
-        "version": "20260801-001",
-        "generated_at": "2026-08-01T10:00:00+05:30",
-        "events": [],
-        "deleted_ids": [],
-        "session_rules": {
-            "NSE_EQUITY_DERIVATIVES": [
-                {"effective_from": "2026-08-03", "segments": [{"open": "09:15:00", "close": "15:45:00"}]}
-            ]
-        },
-    }
-    _fake_refresh(monkeypatch, tmp_path, live_payload)
-    EventCalendar.from_records(
-        sample_records,
-        refresh_url="https://example.com/live_events.json",
-        refresh_interval_hours=4,
-    )
-
-    def offline(request, timeout=10):
-        raise OSError("network down")
-
-    monkeypatch.setattr(calendar_module, "urlopen", offline)
-    restarted = EventCalendar.from_records(
-        sample_records,
-        refresh_url="https://example.com/live_events.json",
-        refresh_interval_hours=4,
-    )
-
-    session = restarted.get_session(datetime(2026, 8, 3, 10, 0), market="NSE_EQUITY_DERIVATIVES")
-    assert [s.close.isoformat() for s in session] == ["15:45:00"]
 
 
-def test_malformed_live_session_rules_do_not_break_the_refresh(monkeypatch, sample_records, tmp_path):
-    live_payload = {
-        "version": "20260801-002",
-        "generated_at": "2026-08-01T10:00:00+05:30",
-        "events": [
-            {
-                "id": "live-2026-08-05",
-                "name": "Exchange Holiday",
-                "category": "EXCHANGE_HOLIDAY",
-                "impact": "EXTREME",
-                "applies_to": ["NSE"],
-                "start": "2026-08-05T00:00:00+05:30",
-            }
-        ],
-        "deleted_ids": [],
-        "session_rules": {"NSE_EQUITY_DERIVATIVES": [{"segments": [{"open": "09:15:00", "close": "15:45:00"}]}]},
-    }
-    _fake_refresh(monkeypatch, tmp_path, live_payload)
-
-    calendar = EventCalendar.from_records(
-        sample_records,
-        refresh_url="https://example.com/live_events.json",
-        refresh_interval_hours=4,
-    )
-
-    # The rule is missing effective_from, so the built-in one stands.
-    session = calendar.get_session(datetime(2026, 8, 3, 10, 0), market="NSE_EQUITY_DERIVATIVES")
-    assert [s.close.isoformat() for s in session] == ["15:40:00"]
-    # ...and the events in the same payload still landed.
-    assert "live-2026-08-05" in {event.id for event in calendar.all_events()}
 
 
 
@@ -690,3 +524,17 @@ def test_malformed_live_session_rules_do_not_break_the_refresh(monkeypatch, samp
 # the helper functions are gone from the source.
 #
 # See docs/TELEMETRY_AUDIT.md.
+
+
+# Four tests stood here until 1.4.1, covering the legacy live-events refresh:
+# merging a remote delta, applying session rules from it, surviving an offline
+# restart from its cache, and tolerating a malformed payload.
+#
+# They are removed with the feature. That path fetched from whatever URL it was
+# given and merged the result into live answers with no integrity check of any
+# kind, while its default endpoint had returned 404 since before 1.4.0 -- so it
+# logged an error and did nothing, which is why it survived unnoticed.
+#
+# What replaces it is the hash-verified store: tests/test_incident_20260626.py
+# covers rejection of an unverified payload, and tests/test_no_egress.py covers
+# what may reach the network at all.

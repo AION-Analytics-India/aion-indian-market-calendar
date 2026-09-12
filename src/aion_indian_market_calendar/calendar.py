@@ -372,7 +372,6 @@ class IndiaMarketCalendar:
         self._live_market_sessions: dict[str, Any] | None = None
 
         if self.refresh_url:
-            self._load_cache()
             self.refresh()
 
     @classmethod
@@ -531,11 +530,17 @@ class IndiaMarketCalendar:
     def _now(self) -> datetime:
         return datetime.now(self.tz)
 
-    def _cache_path(self) -> Path:
-        base = Path(os.path.expanduser("~")) / ".aion_indian_market"
-        base.mkdir(parents=True, exist_ok=True)
-        return base / "live_cache.json"
 
+
+    def _fetch_json(self, url: str) -> dict:
+        """GET a URL and parse it as JSON. Used by the taxonomy manifesto path.
+
+        Kept when the legacy live-events refresh was removed in 1.4.1: it was
+        only ever a helper that path used, not part of it.
+        """
+        request = Request(url, headers=self._refresh_headers())
+        with urlopen(request, timeout=10) as response:
+            return json.load(response)
 
     def _taxonomy_cache_dir(self) -> Path:
         base = Path(os.getenv("AION_IMI_TAXONOMY_CACHE_DIR", "")).expanduser() if os.getenv("AION_IMI_TAXONOMY_CACHE_DIR") else Path(os.path.expanduser("~")) / ".aion_indian_market" / "taxonomy"
@@ -601,13 +606,6 @@ class IndiaMarketCalendar:
             return remote_version > local_version
         return str(remote.get("signature") or "") != str(local.get("signature") or "")
 
-    def _fetch_json(self, url: str) -> dict[str, Any]:
-        request = Request(url, headers=self._refresh_headers())
-        with urlopen(request, timeout=10) as response:
-            payload = json.load(response)
-        if not isinstance(payload, dict):
-            raise ValueError(f"Expected JSON object from {url}")
-        return payload
 
     def _fetch_bytes(self, url: str) -> bytes:
         request = Request(url, headers=self._refresh_headers())
@@ -702,110 +700,38 @@ class IndiaMarketCalendar:
             logger.warning("Failed to refresh IMI taxonomy manifesto: %s", exc)
             return False
 
-    def _apply_live_session_payload(
-        self,
-        *,
-        session_rules: Any = None,
-        market_sessions: Any = None,
-    ) -> None:
-        """Apply live session timings over the bundled ones.
 
-        A timing regime change (e.g. the Closing Auction Session) has to reach
-        installs that will never upgrade the package, so it travels on the same
-        refresh channel as events. Bad data here must not cost the caller their
-        events: each block is applied independently and failures fall back to
-        the bundled timings.
-        """
-        if isinstance(session_rules, dict):
-            try:
-                self.session_rules = self._load_session_rules(session_rules)
-                self._live_session_rules = dict(session_rules)
-            except Exception as exc:
-                logger.warning("Ignoring live session_rules payload: %s", exc)
-        if isinstance(market_sessions, dict):
-            try:
-                self.default_sessions = self._load_default_sessions(market_sessions)
-                self._live_market_sessions = dict(market_sessions)
-            except Exception as exc:
-                logger.warning("Ignoring live market_sessions payload: %s", exc)
 
-    def _load_cache(self) -> None:
-        try:
-            payload = json.loads(self._cache_path().read_text(encoding="utf-8"))
-            last_refreshed = payload.get("last_refreshed")
-            self._last_refreshed = _coerce_datetime(last_refreshed, self.tz) if last_refreshed else None
-            generated_at = payload.get("generated_at")
-            self._live_generated_at = _coerce_datetime(generated_at, self.tz) if generated_at else None
-            self._live_version = payload.get("version")
-            self._live_deleted_ids = {str(item).strip() for item in payload.get("deleted_ids", []) if str(item).strip()}
-            self._live_events = {
-                event.id: self._normalize_event(event.to_dict())
-                for event in (MarketEvent.from_dict(record) for record in payload.get("events", []))
-                if event.id not in self._live_deleted_ids
-            }
-            self._apply_live_session_payload(
-                session_rules=payload.get("session_rules"),
-                market_sessions=payload.get("market_sessions"),
-            )
-        except Exception:
-            self._last_refreshed = None
-            self._live_generated_at = None
-            self._live_version = None
-            self._live_deleted_ids = set()
-            self._live_events = {}
-
-    def _save_cache(self) -> None:
-        payload = {
-            "version": self._live_version,
-            "generated_at": self._live_generated_at.isoformat() if self._live_generated_at else None,
-            "last_refreshed": self._last_refreshed.isoformat() if self._last_refreshed else None,
-            "deleted_ids": sorted(self._live_deleted_ids),
-            "events": [event.to_dict() for event in self._live_events.values()],
-            "session_rules": self._live_session_rules,
-            "market_sessions": self._live_market_sessions,
-        }
-        self._cache_path().write_text(json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
 
     def refresh(self, force: bool = False) -> bool:
-        taxonomy_refreshed = self.refresh_taxonomy_manifesto(force=force)
-        if not self.refresh_url:
-            return taxonomy_refreshed
-        if (
-            not force
-            and self._last_refreshed is not None
-            and (self._now() - self._last_refreshed) < self.refresh_interval
-        ):
-            logger.debug("Skipping market-calendar refresh; interval has not elapsed")
-            return taxonomy_refreshed
+        """Fetch newer holiday data if there is any.
 
-        try:
-            request = Request(self.refresh_url, headers=self._refresh_headers())
-            with urlopen(request, timeout=10) as response:
-                payload = json.load(response)
-        except Exception as exc:
-            logger.warning("Failed to refresh market-calendar live events: %s", exc)
-            return False
+        .. versionchanged:: 1.4.1
+           The legacy live-events path is gone. This now refreshes the
+           hash-verified dataset and nothing else.
 
-        deleted_ids = {str(item).strip() for item in payload.get("deleted_ids", []) if str(item).strip()}
-        live_events: dict[str, MarketEvent] = {}
-        for record in payload.get("events", []):
-            event = self._normalize_event(record)
-            if event.id not in deleted_ids:
-                live_events[event.id] = event
+        Until 1.4.1 this fetched from whatever ``refresh_url`` was given, merged
+        the result into the in-memory events, and cached it to
+        ``~/.aion_indian_market/live_cache.json`` -- with no integrity check of
+        any kind. The default URL pointed at an endpoint that has returned 404
+        since before 1.4.0, so in practice it logged an error and did nothing,
+        which is why it survived this long unnoticed.
 
-        generated_at = payload.get("generated_at")
-        self._live_generated_at = _coerce_datetime(generated_at, self.tz) if generated_at else None
-        self._live_version = payload.get("version")
-        self._live_deleted_ids = deleted_ids
-        self._live_events = live_events
-        self._apply_live_session_payload(
-            session_rules=payload.get("session_rules"),
-            market_sessions=payload.get("market_sessions"),
-        )
-        self._last_refreshed = self._now()
-        self._save_cache()
-        logger.info("Loaded %d live market-calendar events from %s", len(live_events), self.refresh_url)
-        return True
+        Keeping a code path that accepts unverified remote data into live answers
+        is not worth the compatibility it buys, particularly in a package whose
+        whole point since 1.4.0 is that data is verified before it is trusted.
+
+        ``refresh_url`` is still accepted and ignored. Point the data source
+        somewhere else with ``AION_IN_CALENDAR_URL`` instead.
+        """
+        if self.refresh_url:
+            logger.debug(
+                "refresh_url is ignored from 1.4.1; the legacy live-events path "
+                "was removed. Use AION_IN_CALENDAR_URL to change the data source."
+            )
+        result = store.refresh(force=force)
+        logger.debug("holiday data refresh: %s", result)
+        return result.startswith("updated")
 
     def _all_events(self) -> tuple[MarketEvent, ...]:
         merged = {event.id: event for event in self.events}
