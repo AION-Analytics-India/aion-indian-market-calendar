@@ -22,6 +22,34 @@ tags:
 This is an open-source Python package surface on Hugging Face.
 It is not a dataset.
 
+
+## What changed in 1.4.0
+
+Full detail in [`CHANGELOG.md`](CHANGELOG.md). The two that matter:
+
+**Telemetry is gone.** Until 1.4.0, running the CLI sent a UUID4 identifier that
+persisted for the life of the machine. Importing the library never did. It is
+deleted, not defaulted off, and a socket-level test now fails the build if
+anything like it returns. You may safely delete
+`~/.aion_indian_market/telemetry.json`. See
+[`docs/TELEMETRY_AUDIT.md`](docs/TELEMETRY_AUDIT.md).
+
+**Holiday data can update again.** The previous mechanism pointed at an endpoint
+returning 404, fed by a poller that stopped in July, and was off by default —
+this package's data had no path to update for two months. It now fetches from a
+published repository, hash-verified, on by default, at most daily. **A new
+closure no longer needs a release.**
+
+Also: SHA-256 verification with an atomic swap, after an incident where an
+unverified refresh overwrote a large data file with a 105-byte fragment;
+`AION_IN_CALENDAR_OFFLINE=1` for air-gapped use; and the bundled data file
+renamed to match the published repository.
+
+```bash
+pip install --upgrade aion-indian-market-calendar
+```
+
+
 ## LLM Capture
 
 ### Component
