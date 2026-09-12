@@ -18,3 +18,10 @@ api_tokens.json.bak*
 *.pem
 *.key
 !**/public*.key
+
+# Build artefacts. PyPI is the canonical source of wheels; a wheel in a git repo
+# invites someone to install from it, which is a support burden and a path that
+# never gets tested.
+build/
+dist/
+*.egg-info/

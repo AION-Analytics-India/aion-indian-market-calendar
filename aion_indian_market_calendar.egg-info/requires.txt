@@ -1,5 +1,0 @@
-pytz
-tzdata
-
-[test]
-pytest>=8
