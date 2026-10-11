@@ -860,3 +860,7 @@ This package can sit in front of a market-intelligence engine to:
 ## License
 
 MIT.
+
+## Reproducible offline example
+
+[Check a session with an explicit timezone and coverage interval](docs/tutorials/offline-session-checks.md). The example uses bundled calendar data and does not measure live exchange availability.
