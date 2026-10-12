@@ -464,7 +464,7 @@ The engine should only see canonical market segments after resolution.
 ```python
 calendar = IndiaMarketCalendar.bundled(
     2026,
-    refresh_url="https://dashboard.aiondashboard.site/calendar/live_events.json",
+    refresh_url="https://YOUR_APPROVED_CALENDAR_ORIGIN/live_events.json",
     refresh_interval_hours=4,
 )
 
@@ -553,7 +553,7 @@ curl -sS https://pypistats.org/api/packages/aion-indian-market-calendar/recent |
 Active live-refresh installs captured by the AION-hosted refresh endpoint:
 
 ```bash
-curl -sS https://dashboard.aiondashboard.site/api/calendar/telemetry/summary | python3 -m json.tool
+curl -sS https://aionanalytics.in/api/calendar/telemetry/summary | python3 -m json.tool
 ```
 
 Interpretation:
@@ -864,3 +864,5 @@ MIT.
 ## Reproducible offline example
 
 [Check a session with an explicit timezone and coverage interval](docs/tutorials/offline-session-checks.md). The example uses bundled calendar data and does not measure live exchange availability.
+
+The refresh example requires an operator-supplied calendar feed. No working public AION refresh endpoint is asserted. Bundled offline use needs no feed.
