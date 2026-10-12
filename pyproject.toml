@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aion-indian-market-calendar"
-version = "1.4.1"
+version = "1.4.2"
 description = "Indian market calendar for Python: trading days, sessions and holidays for NSE, BSE, MCX and currency derivatives. Bundled checks work offline."
 readme = "README.md"
 requires-python = ">=3.10"
