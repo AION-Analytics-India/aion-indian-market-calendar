@@ -128,7 +128,8 @@ CLOSING_AUCTION_CIRCULAR = (
 # session segment changes; only the internal phases move (see market_timings).
 PRE_OPEN_REVISION_EFFECTIVE_FROM = date(2026, 9, 7)
 
-# CAS phase boundaries. Para 4.2.5 defines these as offsets rather than fixed
+# CAS phase boundaries, 2026-08-03 to 2026-12-06 (superseded below from 2026-12-07).
+# Para 4.2.5 defines these as offsets rather than fixed
 # clock times, so a special trading session shifts the whole tail intact:
 # derivatives close 10 minutes after the CAS order entry period ends, and the
 # post-close session begins 10 minutes after the derivatives segment closes.
@@ -138,6 +139,38 @@ CAS_END = time(15, 35)
 EQUITY_DERIVATIVES_CLOSE = time(15, 40)
 POST_CLOSE_START = time(15, 50)
 POST_CLOSE_END = time(16, 0)
+
+# CAS revision of October 15, 2026
+# SEBI circular HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated October 15, 2026,
+# "Review of certain aspects of the Closing Auction Session, market timings and
+# settlement methodology for derivatives contracts". Modifies the January 16
+# circular above.
+#
+# Para 4.2.1: CAS becomes a separate session of 10 minutes, 15:30 to 15:40:
+#                15:30 +1m  reference price calculation / transition CTS -> CAS
+#                15:31 +5m  order entry, limit and market orders
+#                15:36 +4m  order entry, limit orders only, random close in last 2 min
+# Para 4.2.2: order entry closes randomly between 15:38 and 15:40.
+# Para 4.2.4: index derivatives trade until 15:45 on all trading days; on an
+#              expiry day the EXPIRING index contracts stop at 15:30. The segment
+#              itself stays open to 15:45, so the calendar models 15:45; the
+#              contract-level stop is reported in market_timings.
+# Para 4.2.5: stock derivatives trade until 15:45, expiry days included.
+# Para 4.2.6: the cash post-close session stays 15:50 to 16:00.
+# Para 4.2.7: on a special trading session: CAS keeps its 10 minutes, the
+#              derivatives segment closes 5 minutes after CAS ends, and the
+#              10-minute post-close begins 5 minutes after that.
+# Para 4.3.1: the reference price is the VWAP of the last 15 minutes of CTS.
+# Para 6.1  : effective December 07, 2026 (para 4.8, carrying unexecuted CTS
+#              limit and iceberg orders into CAS, from February 08, 2027; it
+#              changes no session time).
+CAS_REVISION_EFFECTIVE_FROM = date(2026, 12, 7)
+CAS_REVISION_CIRCULAR = (
+    "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15, para 4.2 (CAS), effective 2026-12-07"
+)
+REVISED_CAS_START = time(15, 30)
+REVISED_CAS_END = time(15, 40)
+REVISED_EQUITY_DERIVATIVES_CLOSE = time(15, 45)
 
 
 def _cas_cash_rule(market: str, *, open_time: time) -> SessionRule:
@@ -149,6 +182,7 @@ def _cas_cash_rule(market: str, *, open_time: time) -> SessionRule:
             SessionSegment(market=market, open=CAS_START, close=CAS_END, kind=SESSION_KIND_CLOSING_AUCTION),
         ),
         effective_from=CLOSING_AUCTION_EFFECTIVE_FROM,
+        effective_to=CAS_REVISION_EFFECTIVE_FROM - timedelta(days=1),
         reason=(
             "Continuous trading in stocks with derivative contracts ends 15:15; "
             "the Closing Auction Session runs 15:15-15:35 (SEBI para 4.2.1)."
@@ -162,16 +196,77 @@ def _cas_derivatives_rule(market: str) -> SessionRule:
         market=market,
         segments=(SessionSegment(market=market, open=time(9, 15), close=EQUITY_DERIVATIVES_CLOSE),),
         effective_from=CLOSING_AUCTION_EFFECTIVE_FROM,
+        effective_to=CAS_REVISION_EFFECTIVE_FROM - timedelta(days=1),
         reason="The equity derivatives segment operates up to 15:40 (SEBI para 4.2.3).",
         source=CLOSING_AUCTION_CIRCULAR,
     )
 
 
+def _revised_cas_cash_rule(market: str, *, open_time: time) -> SessionRule:
+    """Cash-segment rule from 2026-12-07: continuous trading to 15:30, CAS 15:30-15:40."""
+    return SessionRule(
+        market=market,
+        segments=(
+            SessionSegment(market=market, open=open_time, close=REVISED_CAS_START),
+            SessionSegment(
+                market=market, open=REVISED_CAS_START, close=REVISED_CAS_END, kind=SESSION_KIND_CLOSING_AUCTION
+            ),
+        ),
+        effective_from=CAS_REVISION_EFFECTIVE_FROM,
+        reason=(
+            "Continuous trading in stocks with derivative contracts ends 15:30; "
+            "the Closing Auction Session runs 15:30-15:40 (SEBI 2026-10-15, para 4.2.1)."
+        ),
+        source=CAS_REVISION_CIRCULAR,
+    )
+
+
+def _revised_cas_derivatives_rule(market: str) -> SessionRule:
+    return SessionRule(
+        market=market,
+        segments=(SessionSegment(market=market, open=time(9, 15), close=REVISED_EQUITY_DERIVATIVES_CLOSE),),
+        effective_from=CAS_REVISION_EFFECTIVE_FROM,
+        reason=(
+            "Index and stock derivatives trade until 15:45 (SEBI 2026-10-15, paras 4.2.4 and 4.2.5); "
+            "expiring index contracts stop at 15:30 on their expiry day."
+        ),
+        source=CAS_REVISION_CIRCULAR,
+    )
+
+
+# NSE circular NSE/COM/76446 dated September 21, 2026 (Commodity Derivatives):
+# internationally reference-able non-agri commodities trade 09:00 to 23:55 from
+# November 02, 2026 to March 12, 2027, both days inclusive (US daylight saving
+# ends). Agri contracts keep their own, earlier close inside the segment.
+NSE_COMMODITY_WINTER_CIRCULAR = "NSE/COM/76446 dated 2026-09-21, effective 2026-11-02 to 2027-03-12"
+
 DEFAULT_SESSION_RULES: dict[str, list[SessionRule]] = {
-    "NSE_EQUITY_FNO_UNDERLYING": [_cas_cash_rule("NSE_EQUITY_FNO_UNDERLYING", open_time=time(9, 0))],
-    "NSE_EQUITY_DERIVATIVES": [_cas_derivatives_rule("NSE_EQUITY_DERIVATIVES")],
-    "BSE_EQUITY_FNO_UNDERLYING": [_cas_cash_rule("BSE_EQUITY_FNO_UNDERLYING", open_time=time(9, 15))],
-    "BSE_EQUITY_DERIVATIVES": [_cas_derivatives_rule("BSE_EQUITY_DERIVATIVES")],
+    "NSE_COMMODITY_DERIVATIVES": [
+        SessionRule(
+            market="NSE_COMMODITY_DERIVATIVES",
+            segments=(SessionSegment(market="NSE_COMMODITY_DERIVATIVES", open=time(9, 0), close=time(23, 55)),),
+            effective_from=date(2026, 11, 2),
+            effective_to=date(2027, 3, 12),
+            reason="Internationally reference-able non-agri commodities trade to 23:55 while US daylight saving is off.",
+            source=NSE_COMMODITY_WINTER_CIRCULAR,
+        ),
+    ],
+    "NSE_EQUITY_FNO_UNDERLYING": [
+        _cas_cash_rule("NSE_EQUITY_FNO_UNDERLYING", open_time=time(9, 0)),
+        _revised_cas_cash_rule("NSE_EQUITY_FNO_UNDERLYING", open_time=time(9, 0)),
+    ],
+    "NSE_EQUITY_DERIVATIVES": [
+        _cas_derivatives_rule("NSE_EQUITY_DERIVATIVES"),
+        _revised_cas_derivatives_rule("NSE_EQUITY_DERIVATIVES"),
+    ],
+    "BSE_EQUITY_FNO_UNDERLYING": [
+        _cas_cash_rule("BSE_EQUITY_FNO_UNDERLYING", open_time=time(9, 15)),
+        _revised_cas_cash_rule("BSE_EQUITY_FNO_UNDERLYING", open_time=time(9, 15)),
+    ],
+    "BSE_EQUITY_DERIVATIVES": [
+        _cas_derivatives_rule("BSE_EQUITY_DERIVATIVES"),
+        _revised_cas_derivatives_rule("BSE_EQUITY_DERIVATIVES"),
+    ],
 }
 
 SEGMENT_ALIASES: dict[str, set[str]] = {
@@ -921,6 +1016,12 @@ class IndiaMarketCalendar:
         return active
 
     def is_market_open(self, dt: datetime | None = None, market: str = "NSE") -> bool:
+        """Return whether *market* has an active session at *dt*.
+
+        On a calendar instance the datetime is the first argument. The
+        module-level helper exposes the alternate ``is_market_open(market,
+        at=...)`` convenience signature.
+        """
         local_dt = _coerce_datetime(dt or self._now(), self.tz)
         return bool(self.active_sessions(local_dt, market=market))
 

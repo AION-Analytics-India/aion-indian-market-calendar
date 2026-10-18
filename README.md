@@ -23,6 +23,16 @@ This is an open-source Python package surface on Hugging Face.
 It is not a dataset.
 
 
+## What changed in 1.5.0
+
+SEBI revised the Closing Auction Session on 15 October 2026. From **7 December 2026**,
+F&O underlying stocks trade continuously to **15:30**, the auction runs **15:30 to
+15:40**, and equity derivatives trade to **15:45**. Earlier dates keep the August
+timings (auction 15:15 to 15:35, derivatives to 15:40). NSE commodity winter hours
+(to 23:55, 2 November 2026 to 12 March 2027) are added. Installs of 1.4.x receive
+the timing rules through the verified data refresh. Full detail in
+[`CHANGELOG.md`](CHANGELOG.md).
+
 ## What changed in 1.4.0
 
 Full detail in [`CHANGELOG.md`](CHANGELOG.md). The two that matter:
@@ -151,6 +161,29 @@ calendar.is_market_open(when, market="NSE_EQUITY_FNO_UNDERLYING")        # True 
 calendar.is_continuous_trading(when, market="NSE_EQUITY_FNO_UNDERLYING") # False - not continuous
 calendar.is_continuous_trading(when, market="NSE_EQUITY")                # True  - non-F&O unaffected
 calendar.is_market_open(datetime(2026, 8, 3, 15, 35), market="NFO")      # True  - derivatives to 15:40
+```
+
+#### Closing Auction Session revision (from 2026-12-07)
+
+Per **SEBI circular HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 15 October 2026**
+(forwarded by NSE as NSE/CMTR/76963 on 16 October 2026), from **7 December 2026**:
+
+| Segment | Continuous trading | Closing Auction | Effective |
+|---|---|---|---|
+| `NSE_EQUITY_FNO_UNDERLYING` / `BSE_EQUITY_FNO_UNDERLYING` | to **15:30** | **15:30 to 15:40** | 2026-12-07 |
+| `NSE_EQUITY` / `BSE_EQUITY` (no F&O contracts) | to 15:30 | none | unchanged |
+| `NSE_EQUITY_DERIVATIVES` / `BSE_EQUITY_DERIVATIVES` | to **15:45** | none | 2026-12-07 |
+
+The auction becomes 10 minutes: reference price and transition at 15:30, order entry
+for limit and market orders from 15:31, limit orders only from 15:36, with a random
+close between 15:38 and 15:40. The post-close session stays 15:50 to 16:00. On an
+expiry day the expiring index contracts stop trading at 15:30; the segment stays open
+to 15:45 for everything else, so the calendar answers 15:45 for the segment.
+
+```python
+calendar.closing_auction_session(datetime(2026, 12, 7, 10, 0), market="NSE_EQUITY_FNO_UNDERLYING")
+# SessionSegment(open=15:30, close=15:40, kind="closing_auction")
+calendar.is_market_open(datetime(2026, 12, 7, 15, 44), market="NFO")   # True - derivatives to 15:45
 ```
 
 `is_market_open` stays **True** through the auction, because the market is still operating. Code that
@@ -331,12 +364,17 @@ cal = IndiaMarketCalendar.bundled(2026)
 ist = pytz.timezone("Asia/Kolkata")
 now = datetime.now(ist)
 
-print(cal.is_market_open(now, "NSE_EQUITY"))
+# Instance method: datetime first, market as a keyword.
+print(cal.is_market_open(now, market="NSE_EQUITY"))
 
 session = cal.get_session(now, "MCX")
 for seg in session or []:
     print(seg.open, seg.close)
 ```
+
+The module-level helper has a different convenience signature:
+`is_market_open(market="NSE", at=when)`. Do not pass the market as the first
+argument to the calendar object's method.
 
 ### Session Response Shape
 
@@ -685,6 +723,16 @@ The 2026 dates were audited against the published NSE, BSE and MCX calendars on 
 equity dates matched exactly. `sources.holiday_audit_note` in the bundled data records the audit.
 
 ## Changelog
+
+### v1.5.0 (2026-10-18): Closing Auction Session revision
+
+- From 2026-12-07: CAS 15:30 to 15:40, F&O underlying continuous trading to 15:30, equity
+  derivatives to 15:45 (SEBI circular dated 15 October 2026). Earlier dates unchanged.
+- The data file carries the session rules, so 1.4.x installs receive them on refresh.
+- NSE commodity non-agri contracts to 23:55 from 2026-11-02 to 2027-03-12 (NSE/COM/76446).
+- Notes on index futures price bands, ETF pre-open norms, the 26 August clearing holiday
+  and the still provisional Muhurat timings.
+- Releases 1.4.0 to 1.4.2 are described in [`CHANGELOG.md`](CHANGELOG.md).
 
 ### v1.3.3 — Data coverage range (2026-08-01)
 

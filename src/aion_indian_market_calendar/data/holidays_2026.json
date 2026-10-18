@@ -1,6 +1,6 @@
 {
   "timezone": "Asia/Kolkata",
-  "version": "v8_20260801_coverage_range",
+  "version": "v9_20261018_cas_revision",
   "range": {
     "start": "2026-01-01",
     "end": "2026-12-25",
@@ -3694,7 +3694,9 @@
       "block_deal_afternoon": {
         "open": "14:05:00",
         "close": "14:20:00"
-      }
+      },
+      "cas_revision_note": "The SEBI circular of 2026-10-15 changes no timing for securities without derivative contracts; the post-close session stays 15:50-16:00 (para 4.2.6).",
+      "etf_pre_open_note": "From 2026-09-07 SEBI's norms for ETF base price, price bands, call auction in the pre-open session and close-out apply (SEBI HO/47/11/11(1)2026-MRD-POD3/I/13804/2026 dated 2026-06-15; start moved from 2026-09-01 by HO/47/11/11(1)2026-MRD-POD3/I/19839/2026 dated 2026-08-28). No session time changes."
     },
     "NSE_EQUITY_DERIVATIVES": {
       "regular": {
@@ -3708,7 +3710,19 @@
         "until": "2026-08-02"
       },
       "note": "The equity derivatives segment operates up to 15:40 (para 4.2.3) — 10 minutes after the CAS order entry period closes. Index derivatives have no auction and trade continuously to 15:40. Dynamic price-band flexing for stock futures does not apply 15:15-15:40 (para 4.4.2).",
-      "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16"
+      "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16",
+      "revised_from_2026_12_07": {
+        "effective_from": "2026-12-07",
+        "regular": {
+          "open": "09:15:00",
+          "close": "15:45:00"
+        },
+        "expiry_day_note": "On an expiry day, trading in the EXPIRING index derivatives contracts stops at 15:30 (para 4.2.4); other index contracts and all stock derivatives, expiring ones included, trade to 15:45 (paras 4.2.4, 4.2.5).",
+        "settlement_note": "Expiring index derivatives settle on the index value computed from constituent VWAPs over the last 30 minutes of continuous trading in the cash segment; expiring stock derivatives on the underlying's VWAP over the same window across all exchanges (para 4.9.1).",
+        "price_band_note": "Stock futures follow the CAS price band from 15:30 to 15:45; dynamic price-band flexing does not apply in that window (para 4.4.2).",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15"
+      },
+      "index_futures_price_band_note": "From 2026-09-07 the CAS-aligned futures price band (+/-3% from a 15:00-15:15 VWAP reference) applies to index futures as well as stock futures, 15:15 to 15:40 (NSE/CMTR/76170 dated 2026-09-03, an update to NSE/CMTR/73362)."
     },
     "NSE_CURRENCY_DERIVATIVES": {
       "regular": {
@@ -3726,7 +3740,18 @@
         "open": "17:00:00",
         "close": "23:30:00"
       },
-      "late_close_note": "Internationally referenced contracts may extend to 23:55 during non-US daylight savings periods."
+      "late_close_note": "Internationally referenced contracts may extend to 23:55 during non-US daylight savings periods.",
+      "winter_2026_27": {
+        "effective_from": "2026-11-02",
+        "effective_to": "2027-03-12",
+        "internationally_referenceable_non_agri": {
+          "open": "09:00:00",
+          "close": "23:55:00"
+        },
+        "trade_modification_end": "23:59:00",
+        "note": "Times are subject to the trading-holiday and Muhurat circulars (NSE download no. 71784 dated 2025-12-15).",
+        "source": "NSE/COM/76446 dated 2026-09-21"
+      }
     },
     "NSE_INTEREST_RATE_DERIVATIVES": {
       "regular": {
@@ -3850,7 +3875,48 @@
       "block_deal_afternoon": {
         "open": "14:05:00",
         "close": "14:20:00"
-      }
+      },
+      "revised_from_2026_12_07": {
+        "effective_from": "2026-12-07",
+        "regular": {
+          "open": "09:00:00",
+          "close": "15:30:00"
+        },
+        "closing_auction": {
+          "open": "15:30:00",
+          "close": "15:40:00",
+          "duration_minutes": 10,
+          "phases": {
+            "session_1_reference_price_transition": {
+              "open": "15:30:00",
+              "close": "15:31:00"
+            },
+            "session_2_order_entry_limit_and_market": {
+              "open": "15:31:00",
+              "close": "15:36:00"
+            },
+            "session_3_order_entry_limit_only": {
+              "open": "15:36:00",
+              "close": "15:40:00",
+              "note": "No modification/cancellation of market orders; order entry closes randomly between 15:38 and 15:40 (paras 4.2.1, 4.2.2). Order matching follows the close (para 4.2.3)."
+            }
+          },
+          "reference_price_window": {
+            "open": "15:15:00",
+            "close": "15:30:00",
+            "note": "VWAP of trades in the last 15 minutes of continuous trading sets the CAS reference price (para 4.3.1)."
+          },
+          "note": "Closing Auction Session, 10 minutes (para 4.2.1). Iceberg and stop-loss orders are not allowed (para 4.5). From 2027-02-08 (para 4.8) unexecuted CTS limit orders and iceberg orders within the CAS price band carry into CAS; no session time changes."
+        },
+        "post_close": {
+          "open": "15:50:00",
+          "close": "16:00:00",
+          "note": "Unchanged, trades at the closing price (para 4.2.6)."
+        },
+        "special_session_note": "On a special trading session CAS keeps its 10 minutes, the derivatives segment closes 5 minutes after CAS ends, and a 10-minute post-close session begins 5 minutes after the derivatives close (para 4.2.7). The exchange circular for each special session sets its clock times.",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15"
+      },
+      "etf_pre_open_note": "From 2026-09-07 SEBI's norms for ETF base price, price bands, call auction in the pre-open session and close-out apply (SEBI HO/47/11/11(1)2026-MRD-POD3/I/13804/2026 dated 2026-06-15; start moved from 2026-09-01 by HO/47/11/11(1)2026-MRD-POD3/I/19839/2026 dated 2026-08-28). No session time changes."
     },
     "BSE_EQUITY": {
       "regular": {
@@ -3903,7 +3969,9 @@
       "block_deal_afternoon": {
         "open": "14:05:00",
         "close": "14:20:00"
-      }
+      },
+      "cas_revision_note": "The SEBI circular of 2026-10-15 changes no timing for securities without derivative contracts; the post-close session stays 15:50-16:00 (para 4.2.6).",
+      "etf_pre_open_note": "From 2026-09-07 SEBI's norms for ETF base price, price bands, call auction in the pre-open session and close-out apply (SEBI HO/47/11/11(1)2026-MRD-POD3/I/13804/2026 dated 2026-06-15; start moved from 2026-09-01 by HO/47/11/11(1)2026-MRD-POD3/I/19839/2026 dated 2026-08-28). No session time changes."
     },
     "BSE_EQUITY_FNO_UNDERLYING": {
       "regular": {
@@ -3993,7 +4061,48 @@
       "block_deal_afternoon": {
         "open": "14:05:00",
         "close": "14:20:00"
-      }
+      },
+      "revised_from_2026_12_07": {
+        "effective_from": "2026-12-07",
+        "regular": {
+          "open": "09:15:00",
+          "close": "15:30:00"
+        },
+        "closing_auction": {
+          "open": "15:30:00",
+          "close": "15:40:00",
+          "duration_minutes": 10,
+          "phases": {
+            "session_1_reference_price_transition": {
+              "open": "15:30:00",
+              "close": "15:31:00"
+            },
+            "session_2_order_entry_limit_and_market": {
+              "open": "15:31:00",
+              "close": "15:36:00"
+            },
+            "session_3_order_entry_limit_only": {
+              "open": "15:36:00",
+              "close": "15:40:00",
+              "note": "No modification/cancellation of market orders; order entry closes randomly between 15:38 and 15:40 (paras 4.2.1, 4.2.2). Order matching follows the close (para 4.2.3)."
+            }
+          },
+          "reference_price_window": {
+            "open": "15:15:00",
+            "close": "15:30:00",
+            "note": "VWAP of trades in the last 15 minutes of continuous trading sets the CAS reference price (para 4.3.1)."
+          },
+          "note": "Closing Auction Session, 10 minutes (para 4.2.1). Iceberg and stop-loss orders are not allowed (para 4.5). From 2027-02-08 (para 4.8) unexecuted CTS limit orders and iceberg orders within the CAS price band carry into CAS; no session time changes."
+        },
+        "post_close": {
+          "open": "15:50:00",
+          "close": "16:00:00",
+          "note": "Unchanged, trades at the closing price (para 4.2.6)."
+        },
+        "special_session_note": "On a special trading session CAS keeps its 10 minutes, the derivatives segment closes 5 minutes after CAS ends, and a 10-minute post-close session begins 5 minutes after the derivatives close (para 4.2.7). The exchange circular for each special session sets its clock times.",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15"
+      },
+      "etf_pre_open_note": "From 2026-09-07 SEBI's norms for ETF base price, price bands, call auction in the pre-open session and close-out apply (SEBI HO/47/11/11(1)2026-MRD-POD3/I/13804/2026 dated 2026-06-15; start moved from 2026-09-01 by HO/47/11/11(1)2026-MRD-POD3/I/19839/2026 dated 2026-08-28). No session time changes."
     },
     "BSE_EQUITY_DERIVATIVES": {
       "regular": {
@@ -4007,7 +4116,19 @@
         "until": "2026-08-02"
       },
       "note": "The equity derivatives segment operates up to 15:40 (para 4.2.3) — 10 minutes after the CAS order entry period closes. Index derivatives have no auction and trade continuously to 15:40. Dynamic price-band flexing for stock futures does not apply 15:15-15:40 (para 4.4.2).",
-      "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16"
+      "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16",
+      "revised_from_2026_12_07": {
+        "effective_from": "2026-12-07",
+        "regular": {
+          "open": "09:15:00",
+          "close": "15:45:00"
+        },
+        "expiry_day_note": "On an expiry day, trading in the EXPIRING index derivatives contracts stops at 15:30 (para 4.2.4); other index contracts and all stock derivatives, expiring ones included, trade to 15:45 (paras 4.2.4, 4.2.5).",
+        "settlement_note": "Expiring index derivatives settle on the index value computed from constituent VWAPs over the last 30 minutes of continuous trading in the cash segment; expiring stock derivatives on the underlying's VWAP over the same window across all exchanges (para 4.9.1).",
+        "price_band_note": "Stock futures follow the CAS price band from 15:30 to 15:45; dynamic price-band flexing does not apply in that window (para 4.4.2).",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15"
+      },
+      "index_futures_price_band_note": "From 2026-09-07 the CAS-aligned futures price band (+/-3% from a 15:00-15:15 VWAP reference) applies to index futures as well as stock futures, 15:15 to 15:40 (stated for NSE in NSE/CMTR/76170 dated 2026-09-03; the BSE notice was not checked)."
     }
   },
   "sources": {
@@ -4016,6 +4137,183 @@
     "mcx_holiday_snapshot": "https://www.mcxindia.com/market-operations/trading-surveillance/trading-holidays",
     "bse_holiday_snapshot": "https://www.bseindia.com/static/markets/marketinfo/listholi.aspx",
     "sebi_cas_circular": "https://www.sebi.gov.in/legal/circulars/jan-2026/introduction-of-closing-auction-session-cas-in-the-equity-cash-segment-and-certain-modifications-in-the-pre-open-auction-session_99122.html",
-    "holiday_audit_note": "2026 equity holidays verified against the NSE/BSE published list on 2026-08-01 (16 dates, exact match). MCX verified as 4 full closures plus evening-only days; 2026-01-01 corrected."
+    "holiday_audit_note": "2026 equity holidays verified against the NSE/BSE published list on 2026-08-01 (16 dates, exact match). MCX verified as 4 full closures plus evening-only days; 2026-01-01 corrected.",
+    "sebi_cas_revision_circular": "https://www.sebi.gov.in/legal/circulars/oct-2026/review-of-certain-aspects-of-the-closing-auction-session-market-timings-and-settlement-methodology-for-derivatives-contracts_105293.html",
+    "cas_revision_audit_note": "CAS revision read from the SEBI circular PDF of 2026-10-15 (sebi.gov.in attachdocs 1792079571420.pdf, sha256 b2bd9c92fdc8bd0b0076792a64cc087dd921037085ff402065acafbe3590f244) on 2026-10-18. Exchange implementation circulars were not yet found on that date.",
+    "muhurat_2026_note": "Muhurat Trading on Sunday 2026-11-08 is confirmed by NSE circular NSE/FAOP/71777 (2025-12-12); its timings 'shall be notified subsequently'. Checked 2026-10-18: not yet notified, so the bundled 18:15-19:15 stays marked provisional.",
+    "nse_cas_revision_circular": "https://nsearchives.nseindia.com/content/circulars/CMTR76963.zip (NSE/CMTR/76963 dated 2026-10-16, forwards the SEBI circular of 2026-10-15)",
+    "nse_commodity_winter_hours": "https://nsearchives.nseindia.com/content/circulars/COM76446.pdf",
+    "clearing_holiday_20260826_note": "2026-08-26 (Id-E-Milad) is a clearing holiday: equity cash and equity derivatives trade; currency, interest rate derivatives and corporate bonds are closed (NCL/MFSS/75777 dated 2026-08-17 and the NSE 2026 holiday list). Checked 2026-10-18."
+  },
+  "session_rules": {
+    "NSE_COMMODITY_DERIVATIVES": [
+      {
+        "market": "NSE_COMMODITY_DERIVATIVES",
+        "segments": [
+          {
+            "market": "NSE_COMMODITY_DERIVATIVES",
+            "open": "09:00:00",
+            "close": "23:55:00",
+            "kind": "continuous"
+          }
+        ],
+        "effective_from": "2026-11-02",
+        "effective_to": "2027-03-12",
+        "reason": "Internationally reference-able non-agri commodities trade to 23:55 while US daylight saving is off.",
+        "source": "NSE/COM/76446 dated 2026-09-21, effective 2026-11-02 to 2027-03-12"
+      }
+    ],
+    "NSE_EQUITY_FNO_UNDERLYING": [
+      {
+        "market": "NSE_EQUITY_FNO_UNDERLYING",
+        "segments": [
+          {
+            "market": "NSE_EQUITY_FNO_UNDERLYING",
+            "open": "09:00:00",
+            "close": "15:15:00",
+            "kind": "continuous"
+          },
+          {
+            "market": "NSE_EQUITY_FNO_UNDERLYING",
+            "open": "15:15:00",
+            "close": "15:35:00",
+            "kind": "closing_auction"
+          }
+        ],
+        "effective_from": "2026-08-03",
+        "effective_to": "2026-12-06",
+        "reason": "Continuous trading in stocks with derivative contracts ends 15:15; the Closing Auction Session runs 15:15-15:35 (SEBI para 4.2.1).",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16, para 4.2 (CAS), effective 2026-08-03"
+      },
+      {
+        "market": "NSE_EQUITY_FNO_UNDERLYING",
+        "segments": [
+          {
+            "market": "NSE_EQUITY_FNO_UNDERLYING",
+            "open": "09:00:00",
+            "close": "15:30:00",
+            "kind": "continuous"
+          },
+          {
+            "market": "NSE_EQUITY_FNO_UNDERLYING",
+            "open": "15:30:00",
+            "close": "15:40:00",
+            "kind": "closing_auction"
+          }
+        ],
+        "effective_from": "2026-12-07",
+        "effective_to": null,
+        "reason": "Continuous trading in stocks with derivative contracts ends 15:30; the Closing Auction Session runs 15:30-15:40 (SEBI 2026-10-15, para 4.2.1).",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15, para 4.2 (CAS), effective 2026-12-07"
+      }
+    ],
+    "NSE_EQUITY_DERIVATIVES": [
+      {
+        "market": "NSE_EQUITY_DERIVATIVES",
+        "segments": [
+          {
+            "market": "NSE_EQUITY_DERIVATIVES",
+            "open": "09:15:00",
+            "close": "15:40:00",
+            "kind": "continuous"
+          }
+        ],
+        "effective_from": "2026-08-03",
+        "effective_to": "2026-12-06",
+        "reason": "The equity derivatives segment operates up to 15:40 (SEBI para 4.2.3).",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16, para 4.2 (CAS), effective 2026-08-03"
+      },
+      {
+        "market": "NSE_EQUITY_DERIVATIVES",
+        "segments": [
+          {
+            "market": "NSE_EQUITY_DERIVATIVES",
+            "open": "09:15:00",
+            "close": "15:45:00",
+            "kind": "continuous"
+          }
+        ],
+        "effective_from": "2026-12-07",
+        "effective_to": null,
+        "reason": "Index and stock derivatives trade until 15:45 (SEBI 2026-10-15, paras 4.2.4 and 4.2.5); expiring index contracts stop at 15:30 on their expiry day.",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15, para 4.2 (CAS), effective 2026-12-07"
+      }
+    ],
+    "BSE_EQUITY_FNO_UNDERLYING": [
+      {
+        "market": "BSE_EQUITY_FNO_UNDERLYING",
+        "segments": [
+          {
+            "market": "BSE_EQUITY_FNO_UNDERLYING",
+            "open": "09:15:00",
+            "close": "15:15:00",
+            "kind": "continuous"
+          },
+          {
+            "market": "BSE_EQUITY_FNO_UNDERLYING",
+            "open": "15:15:00",
+            "close": "15:35:00",
+            "kind": "closing_auction"
+          }
+        ],
+        "effective_from": "2026-08-03",
+        "effective_to": "2026-12-06",
+        "reason": "Continuous trading in stocks with derivative contracts ends 15:15; the Closing Auction Session runs 15:15-15:35 (SEBI para 4.2.1).",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16, para 4.2 (CAS), effective 2026-08-03"
+      },
+      {
+        "market": "BSE_EQUITY_FNO_UNDERLYING",
+        "segments": [
+          {
+            "market": "BSE_EQUITY_FNO_UNDERLYING",
+            "open": "09:15:00",
+            "close": "15:30:00",
+            "kind": "continuous"
+          },
+          {
+            "market": "BSE_EQUITY_FNO_UNDERLYING",
+            "open": "15:30:00",
+            "close": "15:40:00",
+            "kind": "closing_auction"
+          }
+        ],
+        "effective_from": "2026-12-07",
+        "effective_to": null,
+        "reason": "Continuous trading in stocks with derivative contracts ends 15:30; the Closing Auction Session runs 15:30-15:40 (SEBI 2026-10-15, para 4.2.1).",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15, para 4.2 (CAS), effective 2026-12-07"
+      }
+    ],
+    "BSE_EQUITY_DERIVATIVES": [
+      {
+        "market": "BSE_EQUITY_DERIVATIVES",
+        "segments": [
+          {
+            "market": "BSE_EQUITY_DERIVATIVES",
+            "open": "09:15:00",
+            "close": "15:40:00",
+            "kind": "continuous"
+          }
+        ],
+        "effective_from": "2026-08-03",
+        "effective_to": "2026-12-06",
+        "reason": "The equity derivatives segment operates up to 15:40 (SEBI para 4.2.3).",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16, para 4.2 (CAS), effective 2026-08-03"
+      },
+      {
+        "market": "BSE_EQUITY_DERIVATIVES",
+        "segments": [
+          {
+            "market": "BSE_EQUITY_DERIVATIVES",
+            "open": "09:15:00",
+            "close": "15:45:00",
+            "kind": "continuous"
+          }
+        ],
+        "effective_from": "2026-12-07",
+        "effective_to": null,
+        "reason": "Index and stock derivatives trade until 15:45 (SEBI 2026-10-15, paras 4.2.4 and 4.2.5); expiring index contracts stop at 15:30 on their expiry day.",
+        "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15, para 4.2 (CAS), effective 2026-12-07"
+      }
+    ]
   }
 }

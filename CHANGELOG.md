@@ -1,5 +1,89 @@
 # Changelog
 
+## 1.5.0 (2026-10-18): Closing Auction Session revision, from 7 December 2026
+
+### Changed: CAS timings from 2026-12-07
+
+SEBI circular HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 15 October 2026
+("Review of certain aspects of the Closing Auction Session, market timings and
+settlement methodology for derivatives contracts") modifies the January 2026 CAS
+framework. NSE forwarded it on 16 October 2026 (NSE/CMTR/76963). From
+**7 December 2026**:
+
+| Segment | Until 2026-12-06 | From 2026-12-07 |
+|---|---|---|
+| `NSE_EQUITY_FNO_UNDERLYING`, `BSE_EQUITY_FNO_UNDERLYING` continuous trading | to 15:15 | to **15:30** |
+| Closing Auction Session (same segments) | 15:15 to 15:35 (20 min) | **15:30 to 15:40** (10 min) |
+| `NSE_EQUITY_DERIVATIVES`, `BSE_EQUITY_DERIVATIVES` | to 15:40 | to **15:45** |
+| Cash post-close session | 15:50 to 16:00 | 15:50 to 16:00 (unchanged) |
+| `NSE_EQUITY`, `BSE_EQUITY` (no derivative contracts) | to 15:30 | to 15:30 (unchanged) |
+
+The new CAS phases (para 4.2.1): reference price and transition 15:30, order entry
+for limit and market orders 15:31, limit orders only 15:36, with order entry closing
+at random between 15:38 and 15:40 (para 4.2.2). The reference price becomes the VWAP
+of the last 15 minutes of continuous trading (para 4.3.1). All of it is in
+`market_timings` under `revised_from_2026_12_07`.
+
+On an expiry day, trading in the **expiring index derivatives contracts** stops at
+15:30 (para 4.2.4). The segment itself stays open to 15:45 for other contracts and
+for stock derivatives, expiring ones included (para 4.2.5), so the calendar reports
+the segment as open to 15:45. The contract-level stop is in `market_timings`; the
+calendar does not know which contracts expire on a given day.
+
+Queries dated before 2026-12-07 return the August regime, so backtests stay correct.
+The carry-forward of unexecuted limit and iceberg orders into CAS (para 4.8, from
+8 February 2027) changes no session time and is documented only.
+
+### Changed: the data file carries the session rules
+
+`holidays_2026.json` now includes `session_rules`. Installs of 1.4.x read rules from
+the verified data refresh, so they receive the 7 December change without upgrading.
+Upgrading is still recommended: 1.5.0 has the rules built in, which matters offline
+(`AION_IN_CALENDAR_OFFLINE=1`) or when the refresh cannot reach the data repository.
+
+### Added: NSE commodity winter hours
+
+NSE/COM/76446 dated 21 September 2026: internationally reference-able non-agri
+commodities trade 09:00 to 23:55 from 2 November 2026 to 12 March 2027.
+`NSE_COMMODITY_DERIVATIVES` sessions now run to 23:55 in that window. Agri contracts
+keep their earlier close inside the segment. Evening-only holiday sessions keep the
+times in their own records. MCX is unchanged: no MCX circular for the winter switch
+had been published on 2026-10-18.
+
+### Documented, no session change
+
+- From 7 September 2026 the CAS-aligned futures price band also covers index futures
+  (NSE/CMTR/76170, 3 September 2026).
+- From 7 September 2026 the SEBI norms for ETF base price, price bands, pre-open call
+  auction and close-out apply (circular of 15 June 2026; start moved from
+  1 September by the circular of 28 August 2026).
+- 26 August 2026 (Id-E-Milad) was a clearing holiday: equity trading open; currency,
+  interest rate derivatives and corporate bonds closed. The bundled data already
+  had this right; the source is now recorded.
+- Muhurat Trading on Sunday 8 November 2026 is confirmed, but its timings are still
+  not notified (NSE/FAOP/71777 says they "shall be notified subsequently"). The
+  bundled 18:15 to 19:15 stays marked provisional.
+
+### Fixed
+
+- The rule-only warning no longer mentions "computed Lithuanian public holidays",
+  text carried over from the sibling package.
+
+### Not covered yet
+
+- 2027 holidays: the exchanges have not published the 2027 lists. Bundled data still
+  ends on 2026-12-25.
+
+## 1.4.2 — documentation correction
+
+### Fixed — calendar instance signature examples
+
+The calendar-object method is documented consistently as
+`calendar.is_market_open(at, market=market)`. The module-level convenience
+helper remains market-first as `is_market_open(market, at=at)`. The distinction
+is now stated in the source docstrings, README and published user guide so
+copying an example cannot pass the market name where a datetime is expected.
+
 ## 1.4.1 — unreleased
 
 ### Removed — the legacy live-events refresh
@@ -159,4 +243,3 @@ Every existing query API behaves as it did. The event payload keeps its `id`,
 match the sibling Lithuanian package, because callers act on them.
 
 ---
-

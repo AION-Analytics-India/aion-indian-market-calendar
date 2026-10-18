@@ -538,3 +538,73 @@ def _fake_refresh(monkeypatch, tmp_path, payload):
 # What replaces it is the hash-verified store: tests/test_incident_20260626.py
 # covers rejection of an unverified payload, and tests/test_no_egress.py covers
 # what may reach the network at all.
+
+
+@pytest.mark.parametrize(
+    "cash_market, derivatives_market, cash_open",
+    [
+        ("NSE_EQUITY_FNO_UNDERLYING", "NSE_EQUITY_DERIVATIVES", "09:00:00"),
+        ("BSE_EQUITY_FNO_UNDERLYING", "BSE_EQUITY_DERIVATIVES", "09:15:00"),
+    ],
+)
+def test_cas_revision_moves_the_auction_to_1530_from_2026_12_07(cash_market, derivatives_market, cash_open):
+    """SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 (2026-10-15): CAS 15:30-15:40, derivatives to 15:45, from 2026-12-07."""
+    calendar = EventCalendar.bundled(2026)
+    last_old_day = datetime(2026, 12, 4, 10, 0)  # Friday before the change
+    first_new_day = datetime(2026, 12, 7, 10, 0)
+
+    def windows(dt, market):
+        return [
+            (segment.open.isoformat(), segment.close.isoformat(), segment.kind)
+            for segment in calendar.get_session(dt, market=market)
+        ]
+
+    assert windows(last_old_day, cash_market) == [
+        (cash_open, "15:15:00", "continuous"),
+        ("15:15:00", "15:35:00", "closing_auction"),
+    ]
+    assert windows(first_new_day, cash_market) == [
+        (cash_open, "15:30:00", "continuous"),
+        ("15:30:00", "15:40:00", "closing_auction"),
+    ]
+    assert windows(last_old_day, derivatives_market) == [("09:15:00", "15:40:00", "continuous")]
+    assert windows(first_new_day, derivatives_market) == [("09:15:00", "15:45:00", "continuous")]
+
+    auction = calendar.closing_auction_session(first_new_day, market=cash_market)
+    assert (auction.open.isoformat(), auction.close.isoformat()) == ("15:30:00", "15:40:00")
+    assert calendar.is_continuous_trading(datetime(2026, 12, 7, 15, 20), market=cash_market)
+    assert not calendar.is_continuous_trading(datetime(2026, 12, 7, 15, 35), market=cash_market)
+    assert calendar.is_market_open(datetime(2026, 12, 7, 15, 39), market=cash_market)
+    assert not calendar.is_market_open(datetime(2026, 12, 7, 15, 41), market=cash_market)
+    assert calendar.is_market_open(datetime(2026, 12, 7, 15, 44), market=derivatives_market)
+    assert not calendar.is_market_open(datetime(2026, 12, 7, 15, 46), market=derivatives_market)
+
+
+def test_cas_revision_leaves_non_fno_equity_alone():
+    calendar = EventCalendar.bundled(2026)
+    for market in ("NSE_EQUITY", "BSE_EQUITY"):
+        session = calendar.get_session(datetime(2026, 12, 7, 10, 0), market=market)
+        assert [(s.close.isoformat(), s.kind) for s in session] == [("15:30:00", "continuous")]
+
+
+def test_bundled_data_carries_the_session_rules():
+    """The data file carries the rules, so installs from 1.2.0 receive them through the verified data refresh."""
+    import json
+    from importlib import resources
+
+    payload = json.loads(
+        resources.files("aion_indian_market_calendar").joinpath("data/holidays_2026.json").read_text(encoding="utf-8")
+    )
+    rules = payload["session_rules"]
+    starts = sorted(rule["effective_from"] for rule in rules["NSE_EQUITY_FNO_UNDERLYING"])
+    assert starts == ["2026-08-03", "2026-12-07"]
+    assert rules["NSE_EQUITY_DERIVATIVES"][-1]["segments"][0]["close"] == "15:45:00"
+
+
+def test_nse_commodity_winter_hours_run_to_2355():
+    """NSE/COM/76446: non-agri commodities trade to 23:55 from 2026-11-02 to 2027-03-12."""
+    calendar = EventCalendar.bundled(2026)
+    market = "NSE_COMMODITY_DERIVATIVES"
+    assert not calendar.is_market_open(datetime(2026, 10, 30, 23, 45), market=market)
+    assert calendar.is_market_open(datetime(2026, 11, 2, 23, 45), market=market)
+    assert not calendar.is_market_open(datetime(2026, 11, 2, 23, 56), market=market)

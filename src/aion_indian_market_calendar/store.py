@@ -325,9 +325,9 @@ def load(auto_refresh: bool = True) -> dict[int, dict[str, Any]]:
             _warn_once(f"read-{label}", "Could not read holiday data from %s: %s", label, exc)
 
     _warn_once("ruleonly",
-               "No verified holiday data; running in RULE-ONLY mode. Weekends and "
-               "computed Lithuanian public holidays still apply, but exchange "
-               "holidays and half-days are unknown.")
+               "No verified holiday data; running in RULE-ONLY mode. Weekends "
+               "still apply, but exchange holidays, special sessions and "
+               "half-days are unknown.")
     _state["data"] = {}
     _state["source"] = "rule-only"
     _state["loaded"] = True

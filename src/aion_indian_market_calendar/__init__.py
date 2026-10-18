@@ -6,7 +6,7 @@ try:
     from importlib.metadata import version as _pkg_version
     __version__: str = _pkg_version("aion-indian-market-calendar")
 except Exception:
-    __version__ = "1.4.2"
+    __version__ = "1.5.0"
 
 
 from . import calendar
@@ -58,6 +58,11 @@ def is_market_open(
     *,
     year: int = 2026,
 ) -> bool:
+    """Return whether *market* is open using the module-level API.
+
+    This helper is market-first; an ``IndiaMarketCalendar`` instance instead
+    uses ``calendar.is_market_open(at, market=market)``.
+    """
     calendar = _bundled_calendar(year)
     when = at if at is not None else datetime.now(calendar.tz)
     return calendar.is_market_open(when, market=market)

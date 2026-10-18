@@ -25,3 +25,7 @@ api_tokens.json.bak*
 build/
 dist/
 *.egg-info/
+
+# Python bytecode caches; 12 were tracked by mistake until 1.5.0.
+__pycache__/
+*.pyc
