@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.1 (2026-10-18): package metadata correction
+
+1.5.0 was built from a working copy that predated the 1.4.2 metadata update, so its
+PyPI page showed the old description and links (an old website domain and a GitLab
+source). 1.5.1 restores the 1.4.2 description and links: homepage
+aionanalytics.in, source, issues and changelog on GitHub. The calendar code and data
+are identical to 1.5.0.
+
 ## 1.5.0 (2026-10-18): Closing Auction Session revision, from 7 December 2026
 
 ### Changed: CAS timings from 2026-12-07

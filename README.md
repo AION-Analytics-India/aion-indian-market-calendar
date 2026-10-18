@@ -23,7 +23,7 @@ This is an open-source Python package surface on Hugging Face.
 It is not a dataset.
 
 
-## What changed in 1.5.0
+## What changed in 1.5.0 (and 1.5.1)
 
 SEBI revised the Closing Auction Session on 15 October 2026. From **7 December 2026**,
 F&O underlying stocks trade continuously to **15:30**, the auction runs **15:30 to
@@ -31,7 +31,8 @@ F&O underlying stocks trade continuously to **15:30**, the auction runs **15:30 
 timings (auction 15:15 to 15:35, derivatives to 15:40). NSE commodity winter hours
 (to 23:55, 2 November 2026 to 12 March 2027) are added. Installs of 1.4.x receive
 the timing rules through the verified data refresh. Full detail in
-[`CHANGELOG.md`](CHANGELOG.md).
+[`CHANGELOG.md`](CHANGELOG.md). 1.5.1 only corrects the PyPI description and links, which
+1.5.0 published out of date.
 
 ## What changed in 1.4.0
 
@@ -723,6 +724,10 @@ The 2026 dates were audited against the published NSE, BSE and MCX calendars on 
 equity dates matched exactly. `sources.holiday_audit_note` in the bundled data records the audit.
 
 ## Changelog
+
+### v1.5.1 (2026-10-18): package metadata correction
+
+- Restores the PyPI description and links of 1.4.2, which 1.5.0 published out of date. No code or data change.
 
 ### v1.5.0 (2026-10-18): Closing Auction Session revision
 
