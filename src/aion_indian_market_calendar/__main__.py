@@ -11,38 +11,25 @@ def setup_logging():
     )
 
 def cmd_update(args):
-    from aion_indian_market_calendar import IndiaMarketCalendar
+    """Refresh the hash-verified holiday data now.
+
+    Until 1.6.0 this command required a --refresh-url and defaulted to a
+    live-events endpoint that ``IndiaMarketCalendar.refresh`` has ignored since
+    1.4.1, so the URL did nothing and leaving it out was an error. It now runs
+    the same verified refresh the library uses. The data source is set with
+    AION_IN_CALENDAR_URL.
+    """
+    from aion_indian_market_calendar import store
     logger = logging.getLogger("nse_calendar_poller")
-    
-    if not args.refresh_url:
-        logger.error("No refresh URL configured — set AION_CALENDAR_REFRESH_URL or pass --refresh-url")
-        sys.exit(1)
-        
-    logger.info(
-        "Starting calendar poll: refresh_url=%s lookback_hours=%.1f",
-        args.refresh_url,
-        args.lookback_hours,
-    )
-    
-    calendar = IndiaMarketCalendar.bundled(
-        2026,
-        refresh_url=args.refresh_url,
-        refresh_interval_hours=args.lookback_hours,
-    )
-    refreshed = calendar.refresh(force=args.force)
-    
-    if refreshed:
-        live_count = len(calendar._live_events)
-        deleted_count = len(calendar._live_deleted_ids)
-        logger.info(
-            "Calendar refresh succeeded: live_events=%d deleted_ids=%d",
-            live_count,
-            deleted_count,
+
+    if args.refresh_url:
+        logger.warning(
+            "--refresh-url / AION_CALENDAR_REFRESH_URL is ignored since 1.4.1; "
+            "set AION_IN_CALENDAR_URL to change the data source."
         )
-    else:
-        logger.info("Calendar refresh skipped — no update needed or endpoint unavailable")
-        
-    logger.info("Calendar poll complete")
+    result = store.refresh(force=args.force)
+    logger.info("Holiday data refresh: %s", result)
+    logger.info("Calendar update complete")
 
 def cmd_poll(args):
     logger = logging.getLogger("nse_rss_poller")
@@ -125,7 +112,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True, help="Command to run")
     
     # Update command
-    parser_update = subparsers.add_parser("update", help="Poll live-refresh endpoint for holiday updates")
+    parser_update = subparsers.add_parser("update", help="Refresh the hash-verified holiday data now")
     parser_update.add_argument(
         "--lookback-hours",
         type=float,
@@ -140,8 +127,8 @@ def main():
     )
     parser_update.add_argument(
         "--refresh-url",
-        default=os.getenv("AION_CALENDAR_REFRESH_URL", "https://api.aiondashboard.site/v1/calendar/live").strip(),
-        help="URL for the live calendar refresh endpoint",
+        default=os.getenv("AION_CALENDAR_REFRESH_URL", "").strip(),
+        help="Ignored since 1.4.1, kept so existing scripts do not break; use AION_IN_CALENDAR_URL",
     )
     parser_update.add_argument(
         "--force",

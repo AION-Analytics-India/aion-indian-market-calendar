@@ -1,27 +1,76 @@
----
-license: mit
-language: en
-tags:
-  - python
-  - market-calendar
-  - nse
-  - mcx
-  - bse
-  - financial-calendar
-  - india
-  - "Indian market calendar Python"
-  - "NSE market calendar"
-  - "MCX trading calendar"
-  - "India trading holidays API"
-  - "Python NSE trading calendar"
-  - "market open India Python"
----
-
 # aion-indian-market-calendar: Indian Market Calendar Python
 
-This is an open-source Python package surface on Hugging Face.
-It is not a dataset.
+Trading days, settlement days, intraday phases, derivative expiries and holidays for
+NSE, BSE, MCX and currency derivatives. Offline by default; holiday data updates through
+a hash-verified refresh without a new release. MIT licensed.
 
+```bash
+pip install aion-indian-market-calendar
+```
+
+## Where this package lives
+
+| | |
+|---|---|
+| PyPI | https://pypi.org/project/aion-indian-market-calendar/ |
+| Source and issues | https://github.com/AION-Analytics-India/aion-indian-market-calendar |
+| Changelog | [`CHANGELOG.md`](https://github.com/AION-Analytics-India/aion-indian-market-calendar/blob/main/CHANGELOG.md) |
+| Product page | https://aionanalytics.in/open-source/indian-market-calendar |
+| Documentation page on Hugging Face (not an install source) | https://huggingface.co/aion-analytics-india/aion-indian-market-calendar |
+| Holiday data the package refreshes from | https://github.com/AION-Analytics-India/aion-market-calendar-data |
+| AION community | Telegram https://t.me/+VXWCiDgZjBI3ZjA1 and Discord https://discord.gg/Dk9Pjc9cVa |
+
+Install only from PyPI.
+
+## What changed in 1.6.0
+
+Four questions a holiday list does not answer, built on the same verified data:
+
+| Function | Answers |
+|---|---|
+| `is_trading_day(day, market="NSE")` | Does the market trade at all that day? |
+| `is_settlement_day(day)` | Does NSE Clearing settle that day? Not the same thing: 1 April 2026 trades and does not settle. `settlement_holidays(year)` lists them. |
+| `get_market_phase(at, market="NSE")` | `PRE_OPEN`, `CONTINUOUS`, `CLOSING_AUCTION`, `POST_CLOSE`, `MUHURAT_TRADING` or `CLOSED` |
+| `get_expiry_day(index, day, contract=None)` | The next expiry on or after `day`: NIFTY weekly Tuesday, NSE monthly contracts (NIFTY, BANKNIFTY, FINNIFTY, MIDCPNIFTY, NIFTYNXT50) the last Tuesday, SENSEX weekly Thursday and monthly the last Thursday. A holiday expiry moves to the previous trading day. |
+| `is_muhurat_trading(day, market="NSE")` | Is there a Diwali Muhurat session? `muhurat_session()` gives the window and says whether it is still provisional. |
+
+```python
+from aion_indian_market_calendar import get_expiry_day, get_market_phase, is_settlement_day
+
+get_expiry_day("NIFTY", "2026-10-25")          # date(2026, 10, 27), a Tuesday
+get_expiry_day("BANKNIFTY", "2026-03-25")      # date(2026, 3, 30): 31 March is a holiday
+get_market_phase("2026-10-26T09:05+05:30", "NSE")   # "PRE_OPEN"
+is_settlement_day("2026-04-01")                # False: annual bank closing
+```
+
+Filtering a pandas DataFrame (pandas is not a dependency of this package):
+
+```python
+import pandas as pd
+from aion_indian_market_calendar import is_trading_day, get_market_phase
+
+idx = pd.to_datetime(["2026-10-23 10:00", "2026-10-24 10:00", "2026-10-26 09:05", "2026-11-10 10:00"]).tz_localize("Asia/Kolkata")
+df = pd.DataFrame({"close": range(4)}, index=idx)
+df = df[[is_trading_day(ts.date(), "NSE") for ts in df.index]]   # drops the weekend and the Diwali holiday
+df["phase"] = [get_market_phase(ts.to_pydatetime(), "NSE") for ts in df.index]   # CONTINUOUS, PRE_OPEN
+```
+
+Pass timezone-aware timestamps. An aware timestamp in any zone is converted to IST, so
+data recorded in New York or UTC gives the right answer. A naive timestamp (no zone) is
+read as IST, which is wrong if it was really local time somewhere else, so from 1.6.0 it
+raises a `UserWarning`: "Naive datetime detected. Assuming IST. Pass a timezone-aware
+datetime to avoid incorrect phase calculation." A plain date, or a date-only string, has no
+clock time and does not warn. Calls with no time argument use the current time in IST,
+wherever the code runs.
+
+Sources: NSE circular NSE/FAOP/68747 (25 June 2025) and BSE notice 20250623-59
+(23 June 2025) for expiry days, which apply to contracts expiring from 1 September 2025;
+NSE's published 2026 clearing-holiday list for settlement days; the SEBI circulars cited in
+the bundled data for phases. Dates outside the bundled data range raise `ValueError`
+rather than guess. Full detail in [`CHANGELOG.md`](CHANGELOG.md).
+
+The CLI `update` command now runs the verified data refresh. Its old default URL had done
+nothing since 1.4.1.
 
 ## What changed in 1.5.0 (and 1.5.1)
 
@@ -724,6 +773,16 @@ The 2026 dates were audited against the published NSE, BSE and MCX calendars on 
 equity dates matched exactly. `sources.holiday_audit_note` in the bundled data records the audit.
 
 ## Changelog
+
+### v1.6.0 (unreleased): settlement days, phases, expiries, Muhurat
+
+- New: `is_trading_day`, `is_settlement_day`, `settlement_holidays`, `get_market_phase`,
+  `get_expiry_day`, `is_muhurat_trading`, `muhurat_session` (module `microstructure`).
+- Changed: a naive datetime, or a time string without an offset, is still read as IST but now
+  raises a `UserWarning` saying so. Dates and date-only strings do not warn.
+- Fixed: the CLI `update` command now runs the hash-verified refresh; its dead default URL is gone.
+- Fixed: this README no longer starts with Hugging Face front matter, so it reads normally on PyPI.
+- CI: the test matrix starts at Python 3.10, the declared minimum. No data change.
 
 ### v1.5.1 (2026-10-18): package metadata correction
 

@@ -1,5 +1,69 @@
 # Changelog
 
+## 1.6.0 (unreleased): settlement days, intraday phases, derivative expiries, Muhurat
+
+### Added
+
+New module `aion_indian_market_calendar.microstructure`, every function also exported from the
+package root. No new dependency, no network access, and no change to the data or to how it is
+fetched: every answer is computed from the same hash-verified data as the rest of the package, so
+a holiday added through the data refresh moves settlement days and expiry dates with no release.
+
+- `is_trading_day(day, market="NSE")`: does the market trade at all that day. Accepts a date, a
+  datetime or an ISO string. Weekends count as trading days only when a special session (Muhurat)
+  is scheduled.
+- `is_settlement_day(day)` and `settlement_holidays(year)`: NSE Clearing's settlement days. NSE
+  publishes one clearing-holiday list per segment; for 2026 the lists for CM, F&O, CD, IRD, CBM,
+  COM, MF and SLBS are identical and equal, date for date, to the bundled currency-derivatives
+  closures (20 dates, checked against NSE's published list on 2026-10-25). Equity therefore has
+  four days that trade but do not settle: 19 February, 19 March, 1 April and 26 August 2026.
+- `get_market_phase(at, market="NSE")`: one of `PRE_OPEN`, `CONTINUOUS`, `CLOSING_AUCTION`,
+  `POST_CLOSE`, `MUHURAT_TRADING`, `CLOSED`, from the bundled `market_timings` and session rules
+  (pre-open 09:00 to 09:15 from 7 September 2026; closing auction and post-close as already
+  modelled; MCX's 08:45 to 08:59 order-cancellation window reported as `PRE_OPEN`). Windows are
+  half-open. Segments with no published pre-open or post-close go straight from `CLOSED` to
+  `CONTINUOUS`.
+- `get_expiry_day(index_name, day, contract=None)`: the nearest expiry on or after `day`.
+  NIFTY weekly on Tuesday; NIFTY, BANKNIFTY, FINNIFTY, MIDCPNIFTY and NIFTYNXT50 monthly on the last
+  Tuesday (NSE circular NSE/FAOP/68747, 25 June 2025); SENSEX weekly on Thursday and monthly on the
+  last Thursday (BSE notice 20250623-59, 23 June 2025). Both apply to contracts expiring from
+  1 September 2025. A scheduled expiry on a trading holiday moves to the previous trading day, as
+  both exchanges' illustrations show. BANKNIFTY has no weekly contract. BANKEX and SENSEX50 are not
+  supported yet.
+- `is_muhurat_trading(day, market="NSE")` and `muhurat_session(day, market)`: the Diwali session,
+  with a `provisional` flag while the exchange has not notified the timings (true for 8 November
+  2026 at the time of writing).
+
+### Refuses rather than guesses
+
+Settlement and expiry questions raise `ValueError` for a date outside the bundled data range
+(currently 1 January to 25 December 2026), because without holiday records the answer is unknown,
+not "a weekday". Expiry questions before 1 September 2025 and unknown indices raise too.
+
+### Changed: naive datetimes warn
+
+A naive datetime, or a time string without an offset, has always been read as IST. For a
+caller elsewhere passing their own local time that gives a wrong answer with no sign of it
+(00:30 in New York is 10:00 IST, an open market; a naive 00:30 reads as closed). The reading
+is unchanged, so no existing caller breaks, but it now raises
+`UserWarning("Naive datetime detected. Assuming IST. Pass a timezone-aware datetime to avoid
+incorrect phase calculation.")`. A `date`, or a date-only string, carries no clock time and
+does not warn. Silence it by passing aware datetimes, or with the standard `warnings` filters.
+
+### Fixed
+
+- CLI `update`: it required `--refresh-url` and defaulted to a live-events endpoint that
+  `IndiaMarketCalendar.refresh` has ignored since 1.4.1, so the URL did nothing and leaving it out
+  was an error. It now runs the hash-verified refresh. `--refresh-url` is still accepted, with a
+  warning, so existing scripts keep working; set `AION_IN_CALENDAR_URL` to change the data source.
+- README: no longer starts with Hugging Face front matter and a line saying it is a Hugging Face
+  page, which is how it showed on PyPI. It now lists where the package is published.
+
+### CI
+
+- The test matrix starts at Python 3.10, the minimum `pyproject.toml` declares. It tested 3.9,
+  where pip refuses to install the package.
+
 ## 1.5.1 (2026-10-18): package metadata correction
 
 1.5.0 was built from a working copy that predated the 1.4.2 metadata update, so its

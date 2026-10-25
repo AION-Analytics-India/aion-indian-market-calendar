@@ -8,6 +8,7 @@ import pkgutil
 import re
 import uuid
 import hashlib
+import warnings
 from datetime import date, datetime, time, timedelta, tzinfo
 from importlib import metadata as importlib_metadata
 from pathlib import Path
@@ -383,19 +384,34 @@ def _convert_timezone(dt: datetime, tz: tzinfo) -> datetime:
     return converted
 
 
+NAIVE_DATETIME_WARNING = (
+    "Naive datetime detected. Assuming IST. "
+    "Pass a timezone-aware datetime to avoid incorrect phase calculation."
+)
+
+
 def _coerce_datetime(value: date | datetime | str, tz: tzinfo) -> datetime:
+    # A naive clock time is read as IST. From 1.6.0 that assumption is announced
+    # with a UserWarning, because a caller in another zone passing their own
+    # local time gets a wrong answer otherwise silently. A plain date, or a
+    # date-only string, carries no clock time, so it does not warn.
+    has_clock = True
     if isinstance(value, datetime):
         dt = value
     elif isinstance(value, date):
         dt = datetime.combine(value, time.min)
+        has_clock = False
     else:
         text = str(value).strip()
         if len(text) == 10:
             dt = datetime.fromisoformat(f"{text}T00:00:00")
+            has_clock = False
         else:
             dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
 
     if dt.tzinfo is None:
+        if has_clock:
+            warnings.warn(NAIVE_DATETIME_WARNING, UserWarning, stacklevel=3)
         return _attach_timezone(dt, tz)
     return _convert_timezone(dt, tz)
 

@@ -6,7 +6,7 @@ try:
     from importlib.metadata import version as _pkg_version
     __version__: str = _pkg_version("aion-indian-market-calendar")
 except Exception:
-    __version__ = "1.5.1"
+    __version__ = "1.6.0"
 
 
 from . import calendar
@@ -25,10 +25,40 @@ from .models import (
     SessionRule,
     SessionSegment,
 )
+from . import microstructure
+from .microstructure import (
+    CLOSED,
+    CLOSING_AUCTION,
+    CONTINUOUS,
+    MUHURAT_TRADING,
+    POST_CLOSE,
+    PRE_OPEN,
+    get_expiry_day,
+    get_market_phase,
+    is_muhurat_trading,
+    is_settlement_day,
+    is_trading_day,
+    muhurat_session,
+    settlement_holidays,
+)
 
 # calendar submodule is now the canonical module name (was _calendar)
 
 __all__ = [
+    "CLOSED",
+    "CLOSING_AUCTION",
+    "CONTINUOUS",
+    "MUHURAT_TRADING",
+    "POST_CLOSE",
+    "PRE_OPEN",
+    "get_expiry_day",
+    "get_market_phase",
+    "is_muhurat_trading",
+    "is_settlement_day",
+    "is_trading_day",
+    "microstructure",
+    "muhurat_session",
+    "settlement_holidays",
     "CLOSING_AUCTION_EFFECTIVE_FROM",
     "SESSION_KIND_CLOSING_AUCTION",
     "SESSION_KIND_CONTINUOUS",

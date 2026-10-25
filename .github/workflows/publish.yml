@@ -18,9 +18,11 @@ jobs:
       matrix:
         # Windows is not optional: it has no system tz database, so a missing
         # tzdata dependency breaks every session check there and passes
-        # everywhere else.
+        # everywhere else. The lowest version tested is the floor declared in
+        # pyproject.toml (requires-python >=3.10); 3.9 was tested until 1.6.0
+        # although pip refuses to install the package there.
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ["3.9", "3.11", "3.13"]
+        python: ["3.10", "3.11", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
