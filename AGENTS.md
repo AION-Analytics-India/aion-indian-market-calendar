@@ -35,6 +35,9 @@ currency derivatives). It is maintained by AION Analytics.
   code or the documentation tells anyone what to trade.
 - **Releases** go only through the tag-triggered workflow in `.github/workflows/publish.yml`.
   Never upload from a laptop, never force-push, never rewrite published history.
+  Dated note, 25 October 2026: the founder granted a one-time exception to this rule for release
+  1.6.0, which was uploaded to PyPI from a maintainer's machine with twine, because the publish
+  workflow has never run in this repository. The rule stands for later releases.
 - **Nothing private.** No credentials, no internal paths, no server details, nothing about systems
   outside this repository.
 
