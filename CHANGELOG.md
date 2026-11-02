@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.1 (2026-11-02): release checks repaired
+
+Same behaviour as 1.7.0, which has a tag and never reached PyPI: its release checks failed.
+Read the 1.7.0 entry below for what this release changes against 1.6.0.
+
+- The publish workflow installed the wrong extra, so pytest was missing and no test ran.
+- The no-identifier-header check matched a sentence in a docstring, now reworded. No code changed.
+- Windows checkouts no longer rewrite line endings in the hash-verified data.
+
 ## 1.7.0 (2026-11-02): commodity close follows US daylight saving
 
 ### Changed

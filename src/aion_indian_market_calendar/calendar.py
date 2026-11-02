@@ -704,7 +704,7 @@ class IndiaMarketCalendar:
     def _refresh_headers(self) -> dict[str, str]:
         """Headers for a data fetch. A User-Agent and nothing else.
 
-        Until 1.4.0 this also sent ``X-AION-Calendar-Install`` -- a UUID4 written
+        Until 1.4.0 this also sent an install identifier header -- a UUID4 written
         to ``~/.aion_indian_market/telemetry.json`` and reused for the life of the
         machine -- along with the package version, the Python version and the
         operating system, on every refresh against an AION-owned host.

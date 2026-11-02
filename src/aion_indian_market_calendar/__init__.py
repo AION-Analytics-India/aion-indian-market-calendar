@@ -6,7 +6,7 @@ try:
     from importlib.metadata import version as _pkg_version
     __version__: str = _pkg_version("aion-indian-market-calendar")
 except Exception:
-    __version__ = "1.7.0"
+    __version__ = "1.7.1"
 
 
 from . import calendar

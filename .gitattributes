@@ -1,0 +1,2 @@
+# The bundled data is verified by hash, so its bytes must not change on checkout.
+*.json -text

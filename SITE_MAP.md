@@ -4,7 +4,7 @@ Mapped 2026-10-25 from the tracked file list, README, CHANGELOG, `pyproject.toml
 
 ## 1. High-Level Purpose
 
-An MIT-licensed Python package (PyPI: `aion-indian-market-calendar`, version `1.7.0` in `pyproject.toml`, latest on PyPI `1.6.0` until 1.7.0 is published) that answers when Indian markets trade and settle: trading days, NSE Clearing settlement days, intraday phases (pre-open, continuous, closing auction, post-close, Muhurat), derivative expiry dates, and holidays for NSE, BSE, MCX and currency derivatives. Answers come from bundled data; an optional hash-verified refresh brings newer data without a release. Runtime dependencies: `pytz`, `tzdata`. Python `>=3.10`. Part of AION Analytics' open-source infrastructure.
+An MIT-licensed Python package (PyPI: `aion-indian-market-calendar`, version `1.7.1` in `pyproject.toml`, latest on PyPI `1.6.0` until 1.7.1 is published) that answers when Indian markets trade and settle: trading days, NSE Clearing settlement days, intraday phases (pre-open, continuous, closing auction, post-close, Muhurat), derivative expiry dates, and holidays for NSE, BSE, MCX and currency derivatives. Answers come from bundled data; an optional hash-verified refresh brings newer data without a release. Runtime dependencies: `pytz`, `tzdata`. Python `>=3.10`. Part of AION Analytics' open-source infrastructure.
 
 Git: independent public repository on GitHub (organisation `AION-Analytics-India`), branch `main`. Releases are published only by the tag-triggered workflow (PyPI trusted publishing).
 
@@ -48,6 +48,7 @@ aion-indian-market-calendar/
 | `scripts/verify_release_ready.sh` | Release gate: no forbidden imports, tag matches version, tests, build, clean install | `pytest`, a build |
 | `scripts/bump_version.sh` | Version bump helper | Edits `pyproject.toml` (not read in detail) |
 | `.github/workflows/publish.yml` | On tag `v*`: test matrix, no-egress check, build, `twine check`, publish via trusted publishing | GitHub Actions |
+| `.gitattributes` | Keeps hash-verified JSON byte-exact on Windows checkouts |
 | `tests/test_microstructure.py` | 57 tests (7 for the naive-datetime warning): settlement list equals NSE's 2026 clearing list, phases at every boundary, CAS before and after 7 Dec 2026, Muhurat, 13 expiry cases including holiday shifts, refusals | Explicit calendar from the bundled file, so a refresh cannot change expectations |
 | `tests/test_calendar.py`, `test_live_overrides.py`, `test_firewall.py`, `test_no_egress.py`, `test_no_telemetry.py`, `test_incident_20260626.py` | Calendar behaviour; no network unless asked; no identifier; the 2026-06-26 incident | |
 | `examples/offline_session_checks.py` | Deterministic offline session checks | |
