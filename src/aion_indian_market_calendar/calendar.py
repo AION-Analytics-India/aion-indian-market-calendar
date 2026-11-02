@@ -9,6 +9,7 @@ import re
 import uuid
 import hashlib
 import warnings
+from dataclasses import replace
 from datetime import date, datetime, time, timedelta, tzinfo
 from importlib import metadata as importlib_metadata
 from pathlib import Path
@@ -240,6 +241,42 @@ def _revised_cas_derivatives_rule(market: str) -> SessionRule:
 # November 02, 2026 to March 12, 2027, both days inclusive (US daylight saving
 # ends). Agri contracts keep their own, earlier close inside the segment.
 NSE_COMMODITY_WINTER_CIRCULAR = "NSE/COM/76446 dated 2026-09-21, effective 2026-11-02 to 2027-03-12"
+
+# Commodity close follows US daylight saving (MCX/TRD/068/2026: 23:30 "after start of
+# US day light savings", from 2026-03-09; MCX/TRD/550/2026 and NSE/COM/76446: 23:55
+# "after end", 2026-11-02 to 2027-03-12; NSE/COM/71784: evening session "5 PM to
+# 11:30/11:55 PM" on partial holidays). The state comes from the IANA zone database,
+# so no date is written here and later years need no upkeep. An explicit rule in the
+# data, for a year an exchange departs from the pattern, takes priority. Times are for
+# non-agri contracts; MCX agri contracts close earlier and are not modelled per contract.
+COMMODITY_SEASONAL_MARKETS = frozenset({"MCX", "NSE_COMMODITY_DERIVATIVES"})
+COMMODITY_CLOSE_US_DAYLIGHT_SAVING = time(23, 30)
+COMMODITY_CLOSE_US_STANDARD_TIME = time(23, 55)
+COMMODITY_SEASONAL_SOURCE = "MCX/TRD/068/2026, MCX/TRD/550/2026, NSE/COM/76446, NSE/COM/71784"
+_COMMODITY_EVENING_OPEN = time(17, 0)
+_COMMODITY_CLOSES = frozenset({COMMODITY_CLOSE_US_DAYLIGHT_SAVING, COMMODITY_CLOSE_US_STANDARD_TIME})
+
+
+def is_us_daylight_saving(day: date) -> bool:
+    """True if US daylight saving is in effect on this calendar day (noon, New York)."""
+    noon = datetime(day.year, day.month, day.day, 12, tzinfo=ZoneInfo("America/New_York"))
+    return bool(noon.dst())
+
+
+def commodity_close(day: date) -> time:
+    """Regular non-agri commodity close for this day, by the US daylight saving rule.
+
+    This is the rule only: it does not check holidays or explicit rules. Use
+    ``IndiaMarketCalendar.get_session`` for the session of a specific day.
+    """
+    return COMMODITY_CLOSE_US_DAYLIGHT_SAVING if is_us_daylight_saving(day) else COMMODITY_CLOSE_US_STANDARD_TIME
+
+
+def _with_seasonal_close(segment: SessionSegment, day: date) -> SessionSegment:
+    if segment.close not in _COMMODITY_CLOSES:
+        return segment
+    return replace(segment, close=commodity_close(day))
+
 
 DEFAULT_SESSION_RULES: dict[str, list[SessionRule]] = {
     "NSE_COMMODITY_DERIVATIVES": [
@@ -992,6 +1029,8 @@ class IndiaMarketCalendar:
                 except ValueError:
                     continue
                 if segment_market in lineage:
+                    if market_key in COMMODITY_SEASONAL_MARKETS and segment.open == _COMMODITY_EVENING_OPEN:
+                        segment = _with_seasonal_close(segment, day)
                     overrides.append(segment)
         return sorted(overrides, key=lambda segment: (segment.open, segment.close))
 
@@ -999,9 +1038,18 @@ class IndiaMarketCalendar:
         """The effective-dated rule governing *market* on *day*, if any."""
         market_key = self._resolve_market_key(market)
         covering = [rule for rule in self.session_rules.get(market_key, []) if rule.covers(day)]
-        if not covering:
-            return None
-        return max(covering, key=lambda rule: rule.effective_from)
+        if covering:
+            return max(covering, key=lambda rule: rule.effective_from)
+        if market_key in COMMODITY_SEASONAL_MARKETS and market_key in self.default_sessions:
+            return SessionRule(
+                market=market_key,
+                segments=tuple(_with_seasonal_close(seg, day) for seg in self.default_sessions[market_key]),
+                effective_from=day,
+                effective_to=day,
+                reason="Commodity close follows US daylight saving.",
+                source=COMMODITY_SEASONAL_SOURCE,
+            )
+        return None
 
     def _sessions_for_day(self, day: date, market_key: str) -> list[SessionSegment]:
         rule = self.active_session_rule(day, market=market_key)

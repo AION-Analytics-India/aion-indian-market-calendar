@@ -70,7 +70,7 @@ def test_bundled_segment_holidays_and_sessions():
     assert calendar.is_trading_day(datetime(2026, 1, 15, 10, 0), market="NSE_COMMODITY_DERIVATIVES")
     commodity_session = calendar.get_session(datetime(2026, 1, 15, 18, 0), market="NSE_COMMODITY_DERIVATIVES")
     assert commodity_session is not None
-    assert [(segment.open.isoformat(), segment.close.isoformat()) for segment in commodity_session] == [("17:00:00", "23:30:00")]
+    assert [(segment.open.isoformat(), segment.close.isoformat()) for segment in commodity_session] == [("17:00:00", "23:55:00")]
 
     mcx_session = calendar.get_session(datetime(2026, 7, 1, 18, 0), market="MCX")
     assert mcx_session is not None
@@ -84,12 +84,12 @@ def test_bundled_segment_holidays_and_sessions():
     assert mcx_normal_session is not None
     assert [(segment.market, segment.open.isoformat(), segment.close.isoformat()) for segment in mcx_normal_session] == [
         ("MCX", "08:45:00", "08:59:00"),
-        ("MCX", "09:00:00", "23:30:00"),
+        ("MCX", "09:00:00", "23:55:00"),
     ]
     mcx_partial_session = calendar.get_session(datetime(2026, 3, 3, 18, 0), market="MCX")
     assert mcx_partial_session is not None
     assert [(segment.market, segment.open.isoformat(), segment.close.isoformat()) for segment in mcx_partial_session] == [
-        ("MCX", "17:00:00", "23:30:00")
+        ("MCX", "17:00:00", "23:55:00")
     ]
     assert calendar.is_trading_day(datetime(2026, 3, 3, 18, 0), market="MCX")
     assert not calendar.is_trading_day(datetime(2026, 4, 3, 18, 0), market="MCX")
@@ -422,7 +422,8 @@ def test_mcx_evening_session_runs_on_equity_holiday_mornings():
         assert day in calendar.holidays(market="NSE_EQUITY", year=2026), day
         assert calendar.is_trading_day(datetime(day.year, day.month, day.day, 18, 0), market="MCX"), day
         session = calendar.get_session(datetime(day.year, day.month, day.day, 18, 0), market="MCX")
-        assert [(s.open.isoformat(), s.close.isoformat()) for s in session] == [("17:00:00", "23:30:00")], day
+        expected_close = "23:55:00" if day in (date(2026, 3, 3), date(2026, 11, 10), date(2026, 11, 24)) else "23:30:00"
+        assert [(s.open.isoformat(), s.close.isoformat()) for s in session] == [("17:00:00", expected_close)], day
         # Morning is shut even though the evening runs.
         assert not calendar.is_market_open(datetime(day.year, day.month, day.day, 10, 0), market="MCX"), day
         assert calendar.is_market_open(datetime(day.year, day.month, day.day, 18, 0), market="MCX"), day

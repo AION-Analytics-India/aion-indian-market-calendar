@@ -22,6 +22,15 @@ pip install aion-indian-market-calendar
 
 Install only from PyPI.
 
+## What changed in 1.7.0
+
+MCX and NSE commodity sessions now close at **23:30 IST while US daylight saving is in effect
+and 23:55 IST otherwise**, including evening-only holiday sessions. No date is written in the
+package, so later years need no upkeep; an explicit data rule takes priority if an exchange
+departs from the pattern. `commodity_close(day)` and `is_us_daylight_saving(day)` are new.
+Times are for non-agri contracts; MCX agri contracts close earlier and are not modelled per
+contract. Sources: MCX/TRD/068/2026, MCX/TRD/550/2026, NSE/COM/76446, NSE/COM/71784.
+
 ## What changed in 1.6.0
 
 Four questions a holiday list does not answer, built on the same verified data:
@@ -763,7 +772,7 @@ banks, so they close while equity trades normally. Annual Bank Closing is the tr
 CDS is not.
 
 MCX is the one segment where a holiday morning does not mean a closed day — on 11 of the 16 equity
-holidays the morning is shut but the **evening session still runs 17:00 – 23:30**, and
+holidays the morning is shut but the **evening session still runs from 17:00 to the seasonal close (23:30 or 23:55)**, and
 `is_trading_day` is `True`. Only four dates are full MCX closures: 26 Jan, 3 Apr, 2 Oct, 25 Dec.
 
 **1 January is the inverse**: the commodity morning session trades and the *evening* is shut, tracking
@@ -774,7 +783,7 @@ equity dates matched exactly. `sources.holiday_audit_note` in the bundled data r
 
 ## Changelog
 
-### v1.6.0 (unreleased): settlement days, phases, expiries, Muhurat
+### v1.6.0: settlement days, phases, expiries, Muhurat
 
 - New: `is_trading_day`, `is_settlement_day`, `settlement_holidays`, `get_market_phase`,
   `get_expiry_day`, `is_muhurat_trading`, `muhurat_session` (module `microstructure`).

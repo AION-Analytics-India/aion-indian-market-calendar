@@ -6,7 +6,7 @@ try:
     from importlib.metadata import version as _pkg_version
     __version__: str = _pkg_version("aion-indian-market-calendar")
 except Exception:
-    __version__ = "1.6.0"
+    __version__ = "1.7.0"
 
 
 from . import calendar
@@ -14,7 +14,9 @@ from .calendar import (
     CLOSING_AUCTION_EFFECTIVE_FROM,
     EventCalendar,
     IndiaMarketCalendar,
+    commodity_close,
     get_ist_timezone,
+    is_us_daylight_saving,
 )
 from .models import (
     SESSION_KIND_CLOSING_AUCTION,
@@ -45,6 +47,8 @@ from .microstructure import (
 # calendar submodule is now the canonical module name (was _calendar)
 
 __all__ = [
+    "commodity_close",
+    "is_us_daylight_saving",
     "CLOSED",
     "CLOSING_AUCTION",
     "CONTINUOUS",

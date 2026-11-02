@@ -1,6 +1,27 @@
 # Changelog
 
-## 1.6.0 (unreleased): settlement days, intraday phases, derivative expiries, Muhurat
+## 1.7.0 (2026-11-02): commodity close follows US daylight saving
+
+### Changed
+
+`MCX` and `NSE_COMMODITY_DERIVATIVES` now close at 23:30 IST while US daylight saving is in
+effect and at 23:55 IST otherwise. The state is read from the IANA zone database for New York,
+so no date is written in the package and later years need no upkeep. An explicit rule in the
+data takes priority if an exchange departs from the pattern.
+
+- MCX was wrong before this release: it stayed at 23:30 all year. From 2 November 2026 it is 23:55.
+- Earlier dates are corrected too: for example 15 January 2026 and 3 March 2026 now report 23:55.
+- Evening-only holiday sessions use the same close (10 and 24 November 2026 are 17:00 to 23:55),
+  replacing the 1.5.0 behaviour of keeping the time in their own record.
+- New: `is_us_daylight_saving(day)` and `commodity_close(day)`. `commodity_close` is the rule
+  only; use `get_session` for a specific day, which also applies holidays.
+
+The times are for non-agri contracts. MCX agri contracts close earlier (21:00 for cotton, cotton
+seed wash oil and kapas, 17:00 for the others) and are not modelled per contract.
+
+Sources: MCX/TRD/068/2026, MCX/TRD/550/2026, NSE/COM/76446, NSE/COM/71784.
+
+## 1.6.0 (2026-10-25): settlement days, intraday phases, derivative expiries, Muhurat
 
 ### Added
 

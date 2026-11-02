@@ -4,7 +4,7 @@ Mapped 2026-10-25 from the tracked file list, README, CHANGELOG, `pyproject.toml
 
 ## 1. High-Level Purpose
 
-An MIT-licensed Python package (PyPI: `aion-indian-market-calendar`, version `1.6.0` in `pyproject.toml`, latest on PyPI `1.5.1`) that answers when Indian markets trade and settle: trading days, NSE Clearing settlement days, intraday phases (pre-open, continuous, closing auction, post-close, Muhurat), derivative expiry dates, and holidays for NSE, BSE, MCX and currency derivatives. Answers come from bundled data; an optional hash-verified refresh brings newer data without a release. Runtime dependencies: `pytz`, `tzdata`. Python `>=3.10`. Part of AION Analytics' open-source infrastructure.
+An MIT-licensed Python package (PyPI: `aion-indian-market-calendar`, version `1.7.0` in `pyproject.toml`, latest on PyPI `1.6.0` until 1.7.0 is published) that answers when Indian markets trade and settle: trading days, NSE Clearing settlement days, intraday phases (pre-open, continuous, closing auction, post-close, Muhurat), derivative expiry dates, and holidays for NSE, BSE, MCX and currency derivatives. Answers come from bundled data; an optional hash-verified refresh brings newer data without a release. Runtime dependencies: `pytz`, `tzdata`. Python `>=3.10`. Part of AION Analytics' open-source infrastructure.
 
 Git: independent public repository on GitHub (organisation `AION-Analytics-India`), branch `main`. Releases are published only by the tag-triggered workflow (PyPI trusted publishing).
 
@@ -27,7 +27,7 @@ aion-indian-market-calendar/
 │   ├── live_overrides.py                    live event overrides
 │   ├── live_events.json                     117-byte live events file shipped in the package
 │   └── data/  (__init__.py, holidays_2026.json, manifest.json)
-├── tests/                                   8 files, 120 tests (57 in test_microstructure.py)
+├── tests/                                   9 files, including test_commodity_seasonal_close.py and test_microstructure.py
 ├── scripts/                                 bump_version.sh, verify_release_ready.sh
 ├── examples/offline_session_checks.py
 └── docs/                                    TELEMETRY_AUDIT.md, tutorials/, campaign-assets/ge01-calendar.jpg
@@ -37,8 +37,8 @@ aion-indian-market-calendar/
 
 | Path | Purpose | Dependencies (Internal/External) |
 | :--- | :--- | :--- |
-| `src/aion_indian_market_calendar/__init__.py` | Public API: `IndiaMarketCalendar`, `is_market_open`, `is_continuous_trading`, `next_trading_day`, and from 1.6.0 `is_trading_day`, `is_settlement_day`, `settlement_holidays`, `get_market_phase`, `get_expiry_day`, `is_muhurat_trading`, `muhurat_session` and the phase constants | Internal: `calendar.py`, `models.py`, `microstructure.py` |
-| `src/aion_indian_market_calendar/calendar.py` | Trading days, sessions, holidays, closing auction rules per exchange and segment | Internal: `models.py`, `store.py`, `live_overrides.py`, bundled `data/`. External: `pytz`, `tzdata`. Reads env `AION_IN_CALENDAR_URL`, a user cache folder under the home directory, and env `AION_IMI_TAXONOMY_CACHE_DIR` (see section 6) |
+| `src/aion_indian_market_calendar/__init__.py` | Public API: `IndiaMarketCalendar`, `is_market_open`, `is_continuous_trading`, `next_trading_day`, from 1.7.0 `commodity_close`, `is_us_daylight_saving`, and from 1.6.0 `is_trading_day`, `is_settlement_day`, `settlement_holidays`, `get_market_phase`, `get_expiry_day`, `is_muhurat_trading`, `muhurat_session` and the phase constants | Internal: `calendar.py`, `models.py`, `microstructure.py` |
+| `src/aion_indian_market_calendar/calendar.py` | Trading days, sessions, holidays, closing auction rules per exchange and segment; commodity close by US daylight saving (1.7.0) | Internal: `models.py`, `store.py`, `live_overrides.py`, bundled `data/`. External: `pytz`, `tzdata`. Reads env `AION_IN_CALENDAR_URL`, a user cache folder under the home directory, and env `AION_IMI_TAXONOMY_CACHE_DIR` (see section 6) |
 | `src/aion_indian_market_calendar/microstructure.py` | Settlement days (NSE Clearing list), intraday phases, expiry days (NSE/FAOP/68747, BSE 20250623-59), Muhurat sessions. Wraps `IndiaMarketCalendar`; fetches nothing; raises outside the bundled data range | Internal: `calendar.py`, `models.py` |
 | `src/aion_indian_market_calendar/models.py` | Dataclasses for events, policies and session rules | Used by `calendar.py` |
 | `src/aion_indian_market_calendar/store.py` | Market data, its manifest, and the refresh that needs no release: every file must verify against its hash before any is adopted | External (only on a refresh): the public data repository `aion-market-calendar-data` over HTTPS. Env: `AION_IN_CALENDAR_URL`, `AION_IN_CALENDAR_CACHE`, `AION_IN_CALENDAR_OFFLINE` |
