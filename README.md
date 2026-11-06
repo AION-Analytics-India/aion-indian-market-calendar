@@ -4,9 +4,26 @@ Trading days, settlement days, intraday phases, derivative expiries and holidays
 NSE, BSE, MCX and currency derivatives. Offline by default; holiday data updates through
 a hash-verified refresh without a new release. MIT licensed.
 
+[![PyPI version](https://img.shields.io/pypi/v/aion-indian-market-calendar)](https://pypi.org/project/aion-indian-market-calendar/) [![Python versions](https://img.shields.io/pypi/pyversions/aion-indian-market-calendar)](https://pypi.org/project/aion-indian-market-calendar/) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+**Official package source:** [AION-Analytics-India/aion-indian-market-calendar](https://github.com/AION-Analytics-India/aion-indian-market-calendar). This repository contains the source and tests; [aion-indian-market-calendar-docs](https://github.com/AION-Analytics-India/aion-indian-market-calendar-docs) is an older documentation mirror, not the maintained implementation.
+
 ```bash
 pip install aion-indian-market-calendar
 ```
+
+## Check a real market rule
+
+The installation is free, open source and does not require an AION API key. For a known date, compare whether NSE equity trades with whether NSE Clearing settles:
+
+```python
+from aion_indian_market_calendar import is_trading_day, is_settlement_day
+
+print(is_trading_day("2026-04-01", market="NSE"))  # True
+print(is_settlement_day("2026-04-01"))               # False
+```
+
+This is a date-specific example, not a live quotation or a trading instruction. To report a wrong session, include the exchange segment, date, expected result and primary exchange circular in an [issue](https://github.com/AION-Analytics-India/aion-indian-market-calendar/issues). [Contribution guide](CONTRIBUTING.md) · [Tested examples](examples/) · [Changelog](CHANGELOG.md).
 
 ## Where this package lives
 
@@ -22,7 +39,9 @@ pip install aion-indian-market-calendar
 
 Install only from PyPI.
 
-## What changed in 1.7.0
+## Latest published release: 1.7.1 (2 November 2026)
+
+Version 1.7.1 carries the 1.7.0 commodity-hours changes below; it repaired the release checks for the published build. [PyPI release](https://pypi.org/project/aion-indian-market-calendar/1.7.1/) · [Changelog](CHANGELOG.md).
 
 MCX and NSE commodity sessions now close at **23:30 IST while US daylight saving is in effect
 and 23:55 IST otherwise**, including evening-only holiday sessions. No date is written in the
