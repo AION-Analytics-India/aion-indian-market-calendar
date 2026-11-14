@@ -78,10 +78,10 @@ $owner=$acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value
 $trusted=@($sid,'S-1-5-18','S-1-5-32-544')
 if($owner -notin $trusted){throw 'Untrusted owner'}
 $writeMask=2 -bor 4 -bor 16 -bor 64 -bor 256 -bor 65536 -bor 262144 -bor 524288
-foreach($ace in $acl.Access){
+foreach($ace in $acl.GetAccessRules($true,$true,[System.Security.Principal.SecurityIdentifier])){
  if($ace.PropagationFlags -band [System.Security.AccessControl.PropagationFlags]::InheritOnly){continue}
  if($ace.AccessControlType -eq 'Allow'){
-  $who=$ace.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value
+  $who=$ace.IdentityReference.Value
   if(($who -notin $trusted) -and (([int]$ace.FileSystemRights -band $writeMask) -ne 0)){throw 'Untrusted writable ACL'}
  }
 }

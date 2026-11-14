@@ -69,7 +69,7 @@ dependencies = [
 
 
 [project.optional-dependencies]
-test = ["pytest>=8", "cryptography>=45,<47"]
+test = ["pytest>=8", "cryptography>=45,<47", "pyOpenSSL>=25.3,<26.3; sys_platform == 'win32'"]
 updates = ["cryptography>=45,<47", "packaging>=24,<27"]
 
 [tool.setuptools]

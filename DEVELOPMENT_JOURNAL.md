@@ -55,3 +55,8 @@ Added staged native Windows Task Scheduler/WinAPI adapters to the existing manag
 ## 2026-11-14T15:23:13.451890+00:00 | Native CI corrections
 
 Native verification branch was explicitly authorized and submitted. First CI source tree matched local source byte-for-byte. Linux actual scheduled lifecycle passed. Native artifact tests exposed a real concurrent-refresh outcome race plus Windows adapter/fixture defects. Retained every failure and unchanged acceptance assertion. Reconcile adoption timeout only by verified equal/newer data, fix native child capture semantics, bound PowerShell JSON to one line and supply required Windows OS profile variables. Add real native locked-pointer and process-tree tests. Replace retired macos-14 label with officially supported macos-15.
+
+
+## 2026-11-14T15:31:39.216747+00:00 | Native acceptance round three
+
+Native second run exposed a pre-existing older-manifest freshness-marker mutation, which is now repaired without changing the regression. Native Windows lease/tree tests executed; corrected pointer fixture to read only after releasing its intentionally exclusive handle. ACL enumeration now requests SID identities directly rather than doing account-name resolution. Replace Windows SslStream test TLS after native handshake failure with in-memory OpenSSL. Added Windows-only test dependency compatible with the existing cryptography range; normal library/updater dependencies unchanged. Local trusted/untrusted TLS smoke and fixture teardown passed.

@@ -70,7 +70,11 @@ if os.name == 'nt':
         finally:os.close(guard)
 
     def test_native_private_directory_acl(tmp_path):
-        root=tmp_path/'owned';win.create_private_directory(root);win.private_path(root)
+        import uuid
+        root=Path(os.environ['LOCALAPPDATA'])/('aion-calendar-native-'+uuid.uuid4().hex)
+        try:win.create_private_directory(root);win.private_path(root)
+        finally:
+            if root.exists():root.rmdir()
 
     def test_native_locked_pointer_keeps_previous_state(tmp_path):
         import json
@@ -79,8 +83,8 @@ if os.name == 'nt':
         fd=win.open_guard(target)
         try:
             with pytest.raises(PermissionError):_atomic(target,{'version':'1.8.1'})
-            assert json.loads(target.read_text())['version']=='1.8.0'
         finally:os.close(fd)
+        assert json.loads(target.read_text())['version']=='1.8.0'
         _atomic(target,{'version':'1.8.1'})
         assert json.loads(target.read_text())['version']=='1.8.1'
 

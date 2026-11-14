@@ -57,3 +57,8 @@ Added source-only CAL-WINDOWS-ADAPTER, artifact verification workflow/helper, pr
 ## 2026-11-14T15:23:13.451890+00:00 | Native CI corrections
 
 CAL-STORE adoption outcome now revalidates current data after bounded lock contention; no lock stealing, schema change or unverified adoption. CAL-WINDOWS-ADAPTER gains explicit capture_output translation and bounded stdin. Windows OS profile variables are a non-secret native process dependency. CAL-CI uses supported macos-15. Diagrams remain structurally valid; this changes proof/failure handling, not public API or storage topology.
+
+
+## 2026-11-14T15:31:39.216747+00:00 | Native acceptance round three
+
+CAL-WINDOWS-TLS-FIXTURE now uses in-memory OpenSSL with a Windows-only test extra, replacing the nonfunctional SslStream path. No production dependency added. CAL-STORE rejects an older manifest without freshness mutation. CAL-WINDOWS-ADAPTER ACL validation uses SID-valued rules, avoiding identity translation. Source diagrams remain valid; proof and test dependency boundaries updated.

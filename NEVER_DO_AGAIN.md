@@ -33,3 +33,8 @@ Never use a historical Windows build, a Windows tag, XML serialization or a Mac 
 ## 2026-11-14T15:23:13.451890+00:00 | Native CI corrections
 
 Verify hosted runner labels against current official availability before submission. Never repair flaky adoption tests by skipping or widening their assertions: reconcile only a complete hash-verified current generation. A stale lock must still fail when the new generation is absent. Native subprocess adapters must define run/Popen argument translation and inherited-handle behavior explicitly.
+
+
+## 2026-11-14T15:31:39.216747+00:00 | Native acceptance round three
+
+A bound TLS port is not a verified authenticated handshake. Exercise a valid CA and invalid CA before relying on a fixture. Resolve new test dependencies jointly with existing package ranges. Avoid account-name lookup in a native ACL validator when SID-valued access rules are available. Do not read a pointer using a second handle while the test intentionally denies sharing. A refused older data version must not renew the accepted-data freshness marker.

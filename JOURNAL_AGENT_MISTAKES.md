@@ -36,3 +36,8 @@ Two combined documentation/test commands used the marketing root for the test ph
 ## 2026-11-14T15:23:13.451890+00:00 | Native CI corrections
 
 Selected macos-14 without checking current runner retirement; provider cancelled those jobs before execution. Official runner-images states retirement on 2 November. Corrected to macos-15. Initial native adapter test hardcoded POSIX separators; corrected expected native Path serialization without weakening action identity. run_child accepted run-style capture_output but forwarded it to Popen; implemented explicit PIPE translation. Reduced Windows fixture environments and EOF-based PowerShell input timed out; use bounded JSON lines plus required non-secret OS profile variables. These are retained failed native results, not passing runs.
+
+
+## 2026-11-14T15:31:39.216747+00:00 | Native acceptance round three
+
+The first pointer-lock test tried to reopen a file while intentionally denying every other handle, causing an expected sharing violation before checking preserved state; moved the unchanged state assertion after unlock. A SslStream fixture with EphemeralKeySet initialized but could not serve TLS in native Windows; initialization was not proof of a successful handshake. Replaced only the fixture, never client validation or trust. A local TLS teardown race dereferenced a concurrently cleared client attribute; use a captured socket reference, then trusted/untrusted handshake and teardown passed. Installing pyOpenSSL alone initially upgraded the disposable driver cryptography beyond the candidate range; restored the original 46.0.7 and solved the joint constraints, pinning the test helper to pyOpenSSL <26.3. No production environment was touched.

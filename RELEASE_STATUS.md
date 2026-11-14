@@ -56,3 +56,11 @@ BLOCKED_WITH_EXACT_REMAINING_GATES. No owner has approved a production root or
 operational signed channel. No public release, tag, default-branch merge, website deploy,
 private model, trading, billing or customer environment change is permitted by
 this record. Only the explicitly authorized verification branch/CI test is allowed. See RELEASE_NOTES_1_8_0.md and docs/UPDATE_CONTRACT.md.
+
+## Native execution checkpoint
+
+Verification branch ci/calendar-1.8-acceptance has actually run. Initial native
+Linux scheduling passed; native failures are retained and repaired on the same
+review branch. All-platform acceptance is not yet complete. See the provider
+run results and current private handoff before interpreting this checkpoint.
+This does not activate production signing, publication or customer updates.

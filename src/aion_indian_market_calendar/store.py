@@ -516,7 +516,7 @@ def refresh(force: bool = False) -> str:
     active_manifest = active[2] if active else {}
     remote_key, active_key = _version_key(remote), _version_key(active_manifest)
     if remote_key < active_key:
-        _mark_checked()
+        # Refusing an older source must not renew the accepted-data freshness marker.
         return _record(f"remote is older than the active dataset (remote {remote_key or 'undated'}, "
                        f"active {active_key}); kept the active dataset")
     if remote_key == active_key:

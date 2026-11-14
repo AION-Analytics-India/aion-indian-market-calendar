@@ -154,7 +154,7 @@ historical; they do not attest Windows, real reboot or production trust.
 | CAL-CI-ARTIFACTS | .github/workflows/verify-candidate.yml, scripts/verify_release_artifacts.py | Read-only GitHub permissions, build once, exact wheel/sdist hash inventory, native 3-OS/5-Python package tests. No publishing or trust provisioning. |
 | CAL-INDEPENDENT-PROBE | scripts/verify_independent_contract.py | Preserved independent 42-case probe; historical fixtures packaged in sdist, actual installed imports required. |
 | CAL-OS-LIFECYCLE | scripts/verify_managed_lifecycle.py | Actual launchd/systemd/Task Scheduler checks, signed synthetic patch, interruption/recovery/rollback/teardown. Refuses unavailable user-manager or interactive session. |
-| CAL-WINDOWS-TLS-FIXTURE | scripts/windows_fixture_tls.py | Loopback test TLS via SslStream and ephemeral in-memory certificate import. No private key file or certificate-store registration. Not production distribution. |
+| CAL-WINDOWS-TLS-FIXTURE | scripts/windows_fixture_tls.py | Loopback test TLS via in-memory OpenSSL; Windows-only test dependency pyOpenSSL, not a runtime updater dependency. No private key file or certificate-store registration. Supersedes the rejected SslStream fixture. |
 | CAL-RELEASE-STATUS | RELEASE_STATUS.md, RELEASE_NOTES_1_8_0.md | Current independent gate decisions and unreleased draft. Included in sdist. |
 
 ```mermaid
@@ -181,3 +181,5 @@ production endpoint or trading dependency is added. Native failures block the
 corresponding gate. No Windows 11 real reboot is inferred from hosted CI.
 
 Native CI correction: CAL-STORE bounded adoption waits now reconcile a peer-completed verified generation before reporting failure. No stale lock is stolen. Native Windows profile/stdin/capture semantics and kernel pointer/tree checks are part of CAL-WINDOWS-ADAPTER. macOS verification uses supported macos-15, replacing a retired label. Current-run outcomes remain evidence-dependent.
+
+Native round-three correction: an older data manifest no longer advances .last_check. CAL-WINDOWS-ADAPTER enumerates ACL identities as SIDs without account-name resolution. Native pointer contention tests read state after releasing their exclusive handle. The test-only TLS boundary uses in-memory OpenSSL after SslStream handshake refusal; production TLS/signing checks remain intact.
