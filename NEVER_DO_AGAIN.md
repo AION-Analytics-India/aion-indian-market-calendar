@@ -53,3 +53,8 @@ Native subprocess environments must supply their documented OS/module boundary. 
 ## 2026-11-14T15:49:14.598288+00:00 | Terminal receipt and native diagnostics
 
 An accepted pointer can precede full operation completion. Use terminal receipts and lease release before managed application launch. Do not weaken a workload gate to make a test pass. Capture only safe native phase/HRESULT metadata before changing scheduler permissions; no passwords, S4U, SYSTEM or elevation fallback.
+
+
+## 2026-11-14T15:53:59.157672+00:00 | Native task XML gate
+
+An ElementTree-valid task can still be rejected by Task Scheduler. Validate through the native service before creating a disabled owned task; retain HRESULT and exact source identity. Do not interpret malformed XML as a reason to elevate, use SYSTEM or store a password.

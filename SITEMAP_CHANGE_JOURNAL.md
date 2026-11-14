@@ -77,3 +77,8 @@ CAL-WINDOWS-ADAPTER now explicitly loads system PowerShell Utility and uses .NET
 ## 2026-11-14T15:49:14.598288+00:00 | Terminal receipt and native diagnostics
 
 CAL-OS-LIFECYCLE joins CURRENT version to the terminal upgraded supervisor receipt before application execution. CAL-WINDOWS-ADAPTER emits bounded phase/HRESULT diagnostics on failure. No schema, risk, calendar calculation, scheduler privilege or authentication change.
+
+
+## 2026-11-14T15:53:59.157672+00:00 | Native task XML gate
+
+CAL-WINDOWS-ADAPTER adds native task XML validation before create-only registration; serialization omits byte encoding for Unicode COM transport. CAL-OS-LIFECYCLE covers all five declared Windows Python versions in isolated CI. No new privilege or production service.

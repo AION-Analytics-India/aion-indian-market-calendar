@@ -75,3 +75,8 @@ Native Windows startup works in the full runner environment but stalls in stripp
 ## 2026-11-14T15:49:14.598288+00:00 | Terminal receipt and native diagnostics
 
 Native Windows package artifacts now pass Python 3.10-3.14, including independent probes and kernel primitives. The real scheduler still fails during registration, so added only phase/HRESULT diagnostic codes (no identity, path, credential or exception text) to distinguish policy denial from contract defects. Mac evidence proves signed 1.8.1 installation; immediate run correctly encountered the still-held safety lease. The harness now waits for the upgraded supervisor receipt emitted after lease release, not CURRENT.json alone. No workload guard was weakened.
+
+
+## 2026-11-14T15:53:59.157672+00:00 | Native task XML gate
+
+Native registration diagnostic confirmed SCHED_E_MALFORMEDXML (0x8004131A), not a request for broader permissions. Omit the byte-encoding declaration from Unicode COM task XML and require TASK_VALIDATE_ONLY before create-only registration. Keep InteractiveToken, least privilege, no passwords and ownership checks. Extend actual Windows scheduler lifecycle matrix to Python 3.10-3.14; macOS/Linux native lifecycle remains separately tested. No release activation.

@@ -16,6 +16,7 @@ from aion_indian_market_calendar import windows_runtime as win
 def test_task_contract_is_interactive_unprivileged_and_passwordless():
     raw=task_xml(Path('C:/private root'), 'owned-test', Path('C:/private root/python.exe'), 'S-1-5-21-1', 60)
     tree=ET.fromstring(raw);n={'t':NS}
+    assert not raw.startswith(b'<?xml'), 'COM Unicode transport must not declare a byte encoding'
     assert tree.findtext('.//t:LogonType', namespaces=n)=='InteractiveToken'
     assert tree.findtext('.//t:RunLevel', namespaces=n)=='LeastPrivilege'
     assert tree.findtext('.//t:Settings/t:Enabled', namespaces=n)=='false'

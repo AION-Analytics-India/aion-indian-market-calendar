@@ -56,3 +56,8 @@ Console-input removal did not resolve the native timeout and is not recorded as 
 ## 2026-11-14T15:49:14.598288+00:00 | Terminal receipt and native diagnostics
 
 The scheduler harness treated a promoted CURRENT pointer as terminal completion. On hosted Mac, the update had succeeded but its worker had not released the exclusive workload lease, so the next application run was correctly denied. Wait for the actual terminal supervisor receipt before launching; preserve the original failure and safety guard. Generic Windows native exceptions hid the registration stage/HRESULT; add bounded non-sensitive diagnostics instead of guessing or changing task permissions.
+
+
+## 2026-11-14T15:53:59.157672+00:00 | Native task XML gate
+
+Portable XML parsing did not prove Task Scheduler acceptance. Native service rejected the serialized task as malformed. Added native validate-only before registration and removed byte encoding from the Unicode COM transport; native execution must confirm this correction. No privilege, principal, security descriptor or consent rule changed.

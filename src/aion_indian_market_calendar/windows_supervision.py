@@ -48,7 +48,11 @@ def task_xml(root: Path, label: str, python: Path, sid: str, seconds: int) -> by
     add(action, 'Command', python)
     add(action, 'Arguments', subprocess.list2cmdline(['-I','-m','aion_indian_market_calendar.update_lifecycle','worker','--root',str(root)]))
     add(action, 'WorkingDirectory', root)
-    return ET.tostring(tree, encoding='utf-8', xml_declaration=True)
+    # RegisterTask receives a Unicode BSTR, not UTF-8 bytes. An encoding='utf-8'
+    # declaration is unnecessary on that transport. Omit it rather than asking
+    # the native service to reconcile byte and BSTR encodings. UTF-8 files
+    # without a declaration remain valid; native validation is still required.
+    return ET.tostring(tree, encoding='utf-8', xml_declaration=False)
 
 
 # The script is fixed source. JSON metadata is encoded as data, never evaluated
@@ -84,6 +88,8 @@ switch($d.operation){
   if($session -eq 0){throw 'Interactive enrollment required'}
   if($task){throw 'Existing task will not be overwritten'}
   $security='D:P(A;;GA;;;'+$sid+')(A;;GA;;;SY)(A;;GA;;;BA)'
+  $script:phase='task-validate'
+  $null=$folder.RegisterTask($d.label,$d.xml,1,$sid,$null,3,$security)
   $script:phase='task-register'
   $task=$folder.RegisterTask($d.label,$d.xml,2,$sid,$null,3,$security)
   Confirm-Owned $task

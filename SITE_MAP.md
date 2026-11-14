@@ -189,3 +189,5 @@ Native invocation refinement: CAL-WINDOWS-ADAPTER carries encoded allowlisted no
 Native module boundary: system PowerShell Utility is an explicit dependency; process/session and ACL operations use .NET directly. User module autoload is excluded. The fix is staged pending native results, with the same consent, ACL and task ownership contracts.
 
 Terminal proof refinement: CURRENT promotion alone is not operation completion; acceptance waits for a supervisor upgraded receipt after lease release. Native failure diagnostics are limited to phase/HRESULT codes. No security boundary was relaxed.
+
+Task XML gate: Windows scheduler validates the exact task before create-only registration. No encoding declaration is sent on Unicode COM transport. Native lifecycle matrix now explicitly includes Windows Python 3.10-3.14, separately from macOS/Linux and real reboot acceptance.
