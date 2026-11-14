@@ -114,6 +114,8 @@ def cli(operation,tag,*extra,root=MANAGED,expected=0):return run([PY,'-m','aion_
 def state():return json.loads((MANAGED/'runtime/CURRENT.json').read_text())
 def receipts():
  p=MANAGED/'runtime/upgrades.jsonl';return [json.loads(s) for s in p.read_text().splitlines()] if p.exists() else []
+def completed(version):
+ return state()['version']==version and any(x.get('kind')=='supervisor_check' and x.get('status')=='upgraded' and x.get('installed')==version for x in receipts())
 def until(fn,seconds=330):
  end=time.monotonic()+seconds
  while time.monotonic()<end:
@@ -135,7 +137,7 @@ try:
  count=len(receipts());cli('start','simulated-manager-restart','--consent');until(lambda:len(receipts())>count)
  record('simulated_user_manager_restart_resumes_from_persistent_registration')
  patch=synth('1.8.1');publish('1.8.1',patch,2);published=time.time()
- until(lambda:state()['version']=='1.8.1')
+ until(lambda:completed('1.8.1'))
  actual=cli('run','managed-application-version','--','-I','-c','import importlib.metadata as m; print(m.version("aion-indian-market-calendar"))').stdout.strip()
  original=run([PY,'-I','-c','import importlib.metadata as m; print(m.version("aion-indian-market-calendar"))'],'original-still-180').stdout.strip()
  assert actual=='1.8.1' and original=='1.8.0'
@@ -154,7 +156,7 @@ try:
  elif platform.system()=='Windows':cli('stop','terminate-owned-windows-task');cli('start','resume-owned-windows-task','--consent')
  else:run(['launchctl','kill','SIGKILL','gui/'+str(os.getuid())+'/'+label],'kill-only-owned-service',online=True)
  assert state()==before
- until(lambda:state()['version']=='1.8.2')
+ until(lambda:completed('1.8.2'))
  assert any(x.get('status')=='interrupted_operation_recovered' for x in receipts())
  record('os_next_tick_recovers_killed_install_without_manual_lock_removal',installed=state()['version'])
  cli('stop','pause-after-recovery');before=state();publish('1.8.3',synth('1.8.3',broken=True),6)

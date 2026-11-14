@@ -48,3 +48,8 @@ Do not claim an attempted scheduled install is failed or successful without its 
 ## 2026-11-14T15:43:41.301220+00:00 | Native module boundary
 
 Native subprocess environments must supply their documented OS/module boundary. Pin system module paths, avoid user module autoload and preserve owner/DACL invariants. Treat alternative explanations as hypotheses until reproduced native evidence confirms the correction.
+
+
+## 2026-11-14T15:49:14.598288+00:00 | Terminal receipt and native diagnostics
+
+An accepted pointer can precede full operation completion. Use terminal receipts and lease release before managed application launch. Do not weaken a workload gate to make a test pass. Capture only safe native phase/HRESULT metadata before changing scheduler permissions; no passwords, S4U, SYSTEM or elevation fallback.

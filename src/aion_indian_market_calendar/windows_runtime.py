@@ -38,7 +38,14 @@ $env:PSModulePath=$PSHOME+'\\Modules'
 Import-Module ($PSHOME+'\\Modules\\Microsoft.PowerShell.Utility\\Microsoft.PowerShell.Utility.psd1') -ErrorAction Stop
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)
 ''' + "$d=[System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('"+payload+"')) | ConvertFrom-Json\n"
-    encoded=base64.b64encode((prefix+script).encode('utf-16-le')).decode('ascii')
+    safe_error=r'''
+}catch{
+ $e=$_.Exception.GetBaseException()
+ [Console]::Error.WriteLine((@{phase=$script:phase;hresult=[int64]$e.HResult;error_type=$e.GetType().FullName} | ConvertTo-Json -Compress))
+ exit 1
+}
+'''
+    encoded=base64.b64encode((prefix+"$script:phase='native-operation'\ntry{\n"+script+safe_error).encode('utf-16-le')).decode('ascii')
     exe=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'
     try:
         result=subprocess.run([str(exe),'-NoLogo','-NoProfile','-NonInteractive','-EncodedCommand',encoded],
@@ -47,7 +54,13 @@ Import-Module ($PSHOME+'\\Modules\\Microsoft.PowerShell.Utility\\Microsoft.Power
     except subprocess.TimeoutExpired:
         raise TimeoutError('Native Windows operation timed out; no policy was weakened') from None
     if result.returncode:
-        raise PermissionError('Native Windows operation failed; no policy was weakened')
+        try:
+            error=json.loads(result.stderr.strip())
+            phase=error.get('phase','unknown')
+            if not isinstance(phase,str) or not all(c.isalnum() or c=='-' for c in phase):phase='unknown'
+            detail='phase='+phase+', hresult='+str(int(error['hresult']))
+        except (ValueError,TypeError,KeyError):detail='unclassified native failure'
+        raise PermissionError('Native Windows operation failed ('+detail+'); no policy was weakened')
     return json.loads(result.stdout.lstrip('\ufeff').strip())
 
 

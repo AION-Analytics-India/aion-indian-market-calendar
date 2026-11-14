@@ -51,3 +51,8 @@ The Windows ACL helper remained blocked despite one-line stdin and SID enumerati
 ## 2026-11-14T15:43:41.301220+00:00 | Native module boundary
 
 Console-input removal did not resolve the native timeout and is not recorded as a confirmed root cause. The retained failed results show the reduced-environment boundary still blocked. Further correction removes dependency on lazy PowerShell cmdlet/module discovery; native execution must decide its result. Do not infer a completed Windows lifecycle from any partial step.
+
+
+## 2026-11-14T15:49:14.598288+00:00 | Terminal receipt and native diagnostics
+
+The scheduler harness treated a promoted CURRENT pointer as terminal completion. On hosted Mac, the update had succeeded but its worker had not released the exclusive workload lease, so the next application run was correctly denied. Wait for the actual terminal supervisor receipt before launching; preserve the original failure and safety guard. Generic Windows native exceptions hid the registration stage/HRESULT; add bounded non-sensitive diagnostics instead of guessing or changing task permissions.

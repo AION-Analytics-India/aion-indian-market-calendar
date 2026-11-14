@@ -72,3 +72,8 @@ CAL-WINDOWS-ADAPTER uses encoded allowlisted local metadata instead of redirecte
 ## 2026-11-14T15:43:41.301220+00:00 | Native module boundary
 
 CAL-WINDOWS-ADAPTER now explicitly loads system PowerShell Utility and uses .NET process/ACL operations. No new service, credential store, scheduler privilege or backend dependency. Native validation remains pending.
+
+
+## 2026-11-14T15:49:14.598288+00:00 | Terminal receipt and native diagnostics
+
+CAL-OS-LIFECYCLE joins CURRENT version to the terminal upgraded supervisor receipt before application execution. CAL-WINDOWS-ADAPTER emits bounded phase/HRESULT diagnostics on failure. No schema, risk, calendar calculation, scheduler privilege or authentication change.

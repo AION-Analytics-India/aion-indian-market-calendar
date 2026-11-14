@@ -70,3 +70,8 @@ Third native run passed the non-Windows package gates and native Windows lease/p
 ## 2026-11-14T15:43:41.301220+00:00 | Native module boundary
 
 Native Windows startup works in the full runner environment but stalls in stripped child environments. The next candidate pins module loading to the system PowerShell Utility module and uses direct .NET process/ACL APIs instead of autoloaded management/security cmdlets. This is a narrowly scoped native-boundary correction; it is not yet a proven native fix. Portable adapter/verifier tests remain 11/11. No permission or trust checks removed.
+
+
+## 2026-11-14T15:49:14.598288+00:00 | Terminal receipt and native diagnostics
+
+Native Windows package artifacts now pass Python 3.10-3.14, including independent probes and kernel primitives. The real scheduler still fails during registration, so added only phase/HRESULT diagnostic codes (no identity, path, credential or exception text) to distinguish policy denial from contract defects. Mac evidence proves signed 1.8.1 installation; immediate run correctly encountered the still-held safety lease. The harness now waits for the upgraded supervisor receipt emitted after lease release, not CURRENT.json alone. No workload guard was weakened.

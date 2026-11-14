@@ -55,12 +55,15 @@ def task_xml(root: Path, label: str, python: Path, sid: str, seconds: int) -> by
 # as shell text; no credential fields are accepted. Every mutation rechecks
 # ownership and exact action.
 CONTROL = win.IDENTITY + r'''
+$script:phase='task-connect'
 $svc=New-Object -ComObject 'Schedule.Service';$svc.Connect();$folder=$svc.GetFolder('\')
 $task=$null
+$script:phase='task-lookup'
 try {$task=$folder.GetTask($d.label)} catch {
  if($_.Exception.GetBaseException().HResult -ne -2147024894){throw}
 }
 function Confirm-Owned($t){
+ $script:phase='task-ownership'
  $v=$t.Definition
  if($v.RegistrationInfo.Description -ne $d.label -or $v.Principal.UserId -ne $sid -or
     $v.Principal.LogonType -ne 3 -or $v.Principal.RunLevel -ne 0 -or
@@ -81,6 +84,7 @@ switch($d.operation){
   if($session -eq 0){throw 'Interactive enrollment required'}
   if($task){throw 'Existing task will not be overwritten'}
   $security='D:P(A;;GA;;;'+$sid+')(A;;GA;;;SY)(A;;GA;;;BA)'
+  $script:phase='task-register'
   $task=$folder.RegisterTask($d.label,$d.xml,2,$sid,$null,3,$security)
   Confirm-Owned $task
  }
