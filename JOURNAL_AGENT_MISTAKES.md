@@ -71,3 +71,8 @@ Exact serialized-principal text is not an account ownership invariant: the nativ
 ## 2026-11-14T16:15:07.586953+00:00 | Durable enrollment ownership
 
 Failed native registration exposed an incomplete setup checkpoint: task intent was written only after provider success, so ambiguous creation could not be reconciled through normal teardown. Moved durable intent before mutation and added an actual native kill/recovery test. Historical failures remain retained. No task ownership check was bypassed. Earlier -m your_application quick-start presupposed an application/dependency installation not provided by the calendar-only runtime; replaced with the actual tested inline version command.
+
+
+## 2026-11-14T16:23:49.108845+00:00 | Native fixture closure
+
+The Python3.10 bootstrap fixture hardcoded a controller closure without typing_extensions. Native pip check correctly failed; supplied the actual required wheel instead of disabling dependency verification. The new partial-setup test referenced sys.argv[1] after deleting its marker argument, so it wrote the wrong file and did not inject the intended crash. Captured the immutable marker path before argument mutation. Neither failed run is counted as successful partial-setup evidence.

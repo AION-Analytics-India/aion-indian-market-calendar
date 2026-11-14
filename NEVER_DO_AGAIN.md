@@ -68,3 +68,8 @@ Compare Windows credential/task ownership by resolved SID, never an unqualified 
 ## 2026-11-14T16:15:07.586953+00:00 | Durable enrollment ownership
 
 Persist exact owned mutation intent before an external provider operation. A configuration flag is not provider success. Repeat setup must not re-enroll, change consent or resume a disabled service. State explicitly that local availability receipts are not email/toast delivery and runtime patches do not self-update a pinned controller. Do not imply arbitrary application dependencies are present in a calendar-only runtime.
+
+
+## 2026-11-14T16:23:49.108845+00:00 | Native fixture closure
+
+A bootstrap wheel closure must include interpreter-conditional dependencies; pip check remains mandatory. Capture fixture callback arguments before mutating argv. A passing happy path cannot substitute for an actually exercised interrupted-setup test.

@@ -92,3 +92,8 @@ CAL-WINDOWS-ADAPTER reconciles provider principal representation using resolved 
 ## 2026-11-14T16:15:07.586953+00:00 | Durable enrollment ownership
 
 CAL-LIFECYCLE adds a local setup-contract fingerprint and idempotent actual-state readback. CAL-WINDOWS-ADAPTER persists service intent before registering a disabled task, with native kill/uninstall regression. Explicit no-network notification and immutable controller boundaries are clarified. No new production service, database or permission boundary.
+
+
+## 2026-11-14T16:23:49.108845+00:00 | Native fixture closure
+
+CAL-OS-LIFECYCLE includes the Python3.10 controller typing_extensions dependency and a corrected immutable crash marker. Runtime updater, signatures, market rules and task permissions are unchanged. Native evidence still gates acceptance.

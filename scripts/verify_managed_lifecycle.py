@@ -84,6 +84,7 @@ tags=set(sys_tags())
 def compatible(pattern):
  return next(p for p in (W/'repair-wheelhouse').glob(pattern) if tags & parse_wheel_filename(p.name)[3])
 CONTROLLER=[compatible(n) for n in ['cryptography-*.whl','cffi-*.whl','pycparser-*.whl','packaging-*.whl']]
+if sys.version_info[:2] < (3,11):CONTROLLER.append(compatible('typing_extensions-*.whl'))
 for p in [NEW,*DEPS,*CONTROLLER]:(S/p.name).write_bytes(p.read_bytes())
 def publish(version,wheel,seq,*,signer=RELEASEKEY,kid='release-a',tamper=False):
  doc={'schema_version':1,'project':'aion-indian-market-calendar','approved':True,'approval_id':'disposable-os-lifecycle','version':version,'channel':'stable','sequence':seq,**period(),'compatibility_series':'.'.join(version.split('.')[:2]),'requires_python':'>=3.10,<3.15','artifacts':[item(p,True) for p in [wheel,*DEPS]]}
@@ -191,10 +192,11 @@ from pathlib import Path
 from aion_indian_market_calendar.windows_supervision import WindowsService
 from aion_indian_market_calendar.update_lifecycle import main
 original=WindowsService.call
+marker_path=sys.argv[1]
 def hold(self,operation,**extra):
  result=original(self,operation,**extra)
  if operation=='install':
-  Path(sys.argv[1]).write_text('registered')
+  Path(marker_path).write_text('registered')
   time.sleep(60)
  return result
 WindowsService.call=hold

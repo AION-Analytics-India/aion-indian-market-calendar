@@ -90,3 +90,8 @@ Native task XML now validates and registers, but the provider returns principal 
 ## 2026-11-14T16:15:07.586953+00:00 | Durable enrollment ownership
 
 Persist Windows task registration intent before provider mutation so a killed setup retains an exact owned task record. Treat only SCHED_E_TASK_NOT_RUNNING as idempotent stop and still require provider readback. Matching setup contracts return actual status without mutation or automatic re-enablement; changed/legacy contracts refuse. Native driver now kills a setup after real disabled-task creation and verifies two uninstalls. Documentation clarifies local notices, pinned controller ownership and managed offline runtime; no universal auto-upgrade claim.
+
+
+## 2026-11-14T16:23:49.108845+00:00 | Native fixture closure
+
+Current native artifact jobs pass all 15 OS/Python combinations. Windows real scheduled patch, rejection, recovery, rollback, revocation and teardown core cases pass. Remaining failures identified in the fixtures: Python3.10 controller closure omitted typing_extensions required by its cryptography version, and partial-setup callback read a mutated argv instead of a captured marker path. Added the missing target dependency and captured marker before argv mutation. Health/pip-check and crash assertions remain intact. Native finalization continues.

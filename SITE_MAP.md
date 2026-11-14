@@ -208,3 +208,5 @@ flowchart LR
   Intent --> Crash[Interrupted setup]
   Crash --> Reconcile[Owned provider readback and uninstall]
 ```
+
+Native fixture closure explicitly includes interpreter-conditional typing_extensions for Python3.10 controller bootstrap. Interrupted-setup markers are captured before CLI argument mutation; no runtime, permission or calendar-data change.
