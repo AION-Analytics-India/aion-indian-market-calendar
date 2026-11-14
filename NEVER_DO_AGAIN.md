@@ -73,3 +73,13 @@ Persist exact owned mutation intent before an external provider operation. A con
 ## 2026-11-14T16:23:49.108845+00:00 | Native fixture closure
 
 A bootstrap wheel closure must include interpreter-conditional dependencies; pip check remains mandatory. Capture fixture callback arguments before mutating argv. A passing happy path cannot substitute for an actually exercised interrupted-setup test.
+
+
+## 2026-11-14T16:34:33.180769+00:00 | Native readback and release limits
+
+After native execution, replace stale current-readiness claims with exact run/platform/version scope; preserve earlier results as dated history. Never infer production signing from CI keys, Windows11 acceptance from Server2022, physical reboot from manager restart, or all-future-patch installation from managed runtime promotion. Do not rerun unchanged implementation merely to test a prose readback update.
+
+
+## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
+
+Accept native lifecycle only after provider teardown readback, not a green build or promoted pointer. Separate tested runtime commit/artifact hashes from later documentation-only commits. Never count repeated interpreter tests as unique features or infer owner trust approval from test signatures.

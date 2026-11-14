@@ -233,9 +233,11 @@ claiming success from a local state flag.
 User jobs resume after login/user-manager startup. Linux boot-before-login
 requires pre-existing authorized lingering; setup reads but never changes it.
 Tests simulate manager stop/start, not a physical reboot. The new Windows
-Task Scheduler adapter is staged and native acceptance is pending. It is not
-approved for customer automatic installation. The library portability
-declaration must not be read as a verified Windows supervisor lifecycle.
+Task Scheduler adapter passed the real signed scheduled-update/recovery/teardown
+lifecycle on Windows Server 2022 x64, Python 3.10-3.14. Actual Windows 11 normal-user
+and physical reboot acceptance remain unverified. It is not approved for customer
+automatic installation. Library portability and synthetic trust tests do not
+establish a production update service.
 
 ### Compatibility, workload and crash boundaries
 
@@ -318,7 +320,7 @@ The local signer does not establish production identity, custody, CI approval
 or release-channel availability. Those are still mandatory production gates.
 
 
-## Windows adapter (staged, not natively accepted)
+## Windows adapter (native CI tested, production release held)
 
 The existing controller/state/trust machine is retained. Task Scheduler receives
 an owned root-hashed task using InteractiveToken/LeastPrivilege. Enrollment
@@ -336,9 +338,10 @@ bootstrap environment; no symlink privilege is needed. Reparse paths refuse.
 Owner/DACL validation excludes untrusted writers. Shared/exclusive kernel file
 handles replace POSIX flock, with explicit child handle inheritance. Dedicated
 CLI workers use a kill-on-close Job Object so stopping that worker also ends its
-own installer descendants; no unrelated process is assigned. Native confirmation
-of ACLs, job nesting, scheduler error semantics and Defender/file contention is
-required. Failure of any boundary must refuse rather than weaken it.
+own installer descendants; no unrelated process is assigned. Native CI exercised
+ACLs, process-tree/lease behavior, scheduler error semantics and transient NTFS
+contention. This does not prove every consumer antivirus/filesystem configuration.
+Failure of any boundary must refuse rather than weaken it.
 
 Windows tests/CI must distinguish calendar correctness, native primitives,
 scheduler lifecycle and Windows 11 reboot/logon. No macOS test certifies these.

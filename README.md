@@ -8,8 +8,9 @@ execution service or compliance guarantee. Exchange notices remain authoritative
 ## Release state
 
 Current gate authority: [RELEASE_STATUS.md](RELEASE_STATUS.md). This is an
-unreleased review branch. Native Windows candidate validation, actual reboot
-acceptance and production signing/channel activation remain blocked.
+unreleased review branch. Native package and managed-updater checks have run
+on GitHub; exact dated results and scope are in RELEASE_STATUS.md. Actual
+reboot acceptance and production signing/channel activation remain blocked.
 
 This branch prepares **1.8.0**. It has not been published. The latest verified
 PyPI release is **1.7.1**, published 2 November 2026. Existing installations do
@@ -39,7 +40,9 @@ The staged `update_lifecycle setup` command detects the current version and
 runtime dependencies, requires consent, verifies an owner-provided trust policy
 and bootstrap artifacts, creates isolated controller/runtime environments, and
 registers a user-scoped launchd job on macOS or systemd timer on Linux. A
-Windows Task Scheduler adapter is staged but has not passed native acceptance. The
+Windows Task Scheduler adapter has passed the actual scheduled-update lifecycle
+on Windows Server 2022 x64 with Python 3.10-3.14. This is not Windows 11 desktop
+or real reboot acceptance. The
 `--enable-auto-install` flag is separate from consent to notifications. Nothing
 is enabled by importing the calendar or refreshing calendar data.
 
@@ -247,8 +250,9 @@ The adapter uses a current interactive user token, least privilege, no stored
 password and no S4U/SYSTEM fallback. It proposes periodic checks while signed
 in and catch-up at logon. It does not promise network checks while logged out.
 Native locks, ACL/reparse protection and worker process-tree cleanup require
-Windows execution. Windows 11 reboot/logon, file contention and complete signed
-scheduled upgrade/recovery/teardown are independent pending tests. Portable XML
+Windows execution. Native CI exercises leases, process-tree termination and complete signed
+scheduled upgrade/recovery/teardown. Windows 11 normal-user and real reboot/logon
+acceptance remain pending. Portable XML
 checks and a Windows runner tag are not substitutes for those tests.
 
 The installed library and optional updater have separate platform gates.

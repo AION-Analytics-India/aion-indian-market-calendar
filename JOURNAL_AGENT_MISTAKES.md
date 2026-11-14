@@ -76,3 +76,13 @@ Failed native registration exposed an incomplete setup checkpoint: task intent w
 ## 2026-11-14T16:23:49.108845+00:00 | Native fixture closure
 
 The Python3.10 bootstrap fixture hardcoded a controller closure without typing_extensions. Native pip check correctly failed; supplied the actual required wheel instead of disabling dependency verification. The new partial-setup test referenced sys.argv[1] after deleting its marker argument, so it wrote the wrong file and did not inject the intended crash. Captured the immutable marker path before argument mutation. Neither failed run is counted as successful partial-setup evidence.
+
+
+## 2026-11-14T16:34:33.180769+00:00 | Native readback and release limits
+
+Earlier active status copy still said Windows was not natively tested after its actual checks passed. Corrected the current authority, retaining dated failed attempts and distinguishing native Server2022 from Windows11/reboot and production trust. Artifact retrieval first treated structured file_uri metadata as a URL; corrected its download_url field, with no URL/key logged or committed. A source-root read used a marketing-relative handoff path; corrected scope, no file changed.
+
+
+## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
+
+No new implementation failure in final run. Earlier failed attempts remain historical. Do not count later documentation commit bytes as the already built855e817 artifacts; record both source identities explicitly. Do not infer real reboot, Windows11 or production trust from the successful native CI.

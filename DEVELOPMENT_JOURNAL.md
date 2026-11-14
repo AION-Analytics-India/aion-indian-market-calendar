@@ -95,3 +95,13 @@ Persist Windows task registration intent before provider mutation so a killed se
 ## 2026-11-14T16:23:49.108845+00:00 | Native fixture closure
 
 Current native artifact jobs pass all 15 OS/Python combinations. Windows real scheduled patch, rejection, recovery, rollback, revocation and teardown core cases pass. Remaining failures identified in the fixtures: Python3.10 controller closure omitted typing_extensions required by its cryptography version, and partial-setup callback read a mutated argv instead of a captured marker path. Added the missing target dependency and captured marker before argv mutation. Health/pip-check and crash assertions remain intact. Native finalization continues.
+
+
+## 2026-11-14T16:34:33.180769+00:00 | Native readback and release limits
+
+Native GitHub artifact matrix passes all 15 OS/Python combinations. Actual Windows Task Scheduler lifecycle passes17 cases on Python3.10-3.14; Linux passes16. Final native Mac rerun is tracked separately from the already successful same-runtime run. Updated current README, release state and contract to reflect executed evidence without claiming production readiness. No runtime/source dependency changed in this documentation-only commit. No additional CI rerun is needed to test prose.
+
+
+## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
+
+Read back all15 package artifacts and7 native lifecycle artifacts. All23 GitHub jobs passed;17 lifecycle cases per Windows3.10-3.14 and16 per Mac/Linux3.13. Verified exact wheel/sdist bytes against provider inventory. Current change records results only; no runtime edits, synthetic patch publication or production change.

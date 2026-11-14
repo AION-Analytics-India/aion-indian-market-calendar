@@ -97,3 +97,13 @@ CAL-LIFECYCLE adds a local setup-contract fingerprint and idempotent actual-stat
 ## 2026-11-14T16:23:49.108845+00:00 | Native fixture closure
 
 CAL-OS-LIFECYCLE includes the Python3.10 controller typing_extensions dependency and a corrected immutable crash marker. Runtime updater, signatures, market rules and task permissions are unchanged. Native evidence still gates acceptance.
+
+
+## 2026-11-14T16:34:33.180769+00:00 | Native readback and release limits
+
+Proof-only update to CAL-CI-ARTIFACTS/CAL-OS-LIFECYCLE/CAL-WINDOWS-ADAPTER. Windows native acceptance is now observed, not merely staged; production/no-reboot boundaries remain. Existing diagrams match unchanged topology. NO_MAP_IMPACT to runtime/dependencies for this documentation-only commit; exact code source is pinned in RELEASE_STATUS.
+
+
+## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
+
+Proof-only final readback for CAL-CI-ARTIFACTS and CAL-OS-LIFECYCLE. Actual provider states show no remaining owned running/scheduled/registered supervisors. No dependency or topology changed; NO_MAP_IMPACT runtime. Canonical map and current gate record agree.

@@ -105,7 +105,7 @@ architecture change: existing graph and implementation paths remain valid.
 | --- | --- | --- |
 | CAL-LIFECYCLE | src/aion_indian_market_calendar/update_lifecycle.py | Explicit consent/setup -> immutable controller + owned runtime -> actual OS registration. Original pip environment remains unchanged. run holds an inherited workload lease; managed promotion defers while in use. Exact dependency pins/consumer constraints and protected-controller admission are enforced. |
 | CAL-TRUST | src/aion_indian_market_calendar/update_trust.py | Independently provisioned root -> expiring monotonic release keyring/revocations -> signed patch-series/Python-compatible release. No production trust identity/channel is bundled. |
-| CAL-USER-SERVICE | src/aion_indian_market_calendar/update_supervision.py | Only owned per-user launchd job or systemd service/timer. Start/stop/status/disable/uninstall read actual provider state. Login/user-manager restart scope; no sudo, lingering change or unrelated restart. Windows adapter staged; native acceptance pending. |
+| CAL-USER-SERVICE | src/aion_indian_market_calendar/update_supervision.py | Only owned per-user launchd job or systemd service/timer. Start/stop/status/disable/uninstall read actual provider state. Login/user-manager restart scope; no sudo, lingering change or unrelated restart. Windows adapter natively tested on Server 2022; production trust/reboot gates separate. |
 | CAL-LIFECYCLE-TESTS | tests/test_update_lifecycle.py, scripts/verify_managed_lifecycle.py | Trust/constraints/admission/failure isolation; real disposable OS scheduling and managed application execution, interruption/recovery and teardown. Test keys do not establish production trust. |
 
 ```mermaid
@@ -150,7 +150,7 @@ historical; they do not attest Windows, real reboot or production trust.
 
 | Component | Source | Boundary and proof |
 | --- | --- | --- |
-| CAL-WINDOWS-ADAPTER | windows_runtime.py, windows_supervision.py under src/aion_indian_market_calendar | Native WinAPI shared/exclusive leases, inherited handles, reparse/DACL checks, dedicated CLI Job Object and owned interactive Task Scheduler task. Staged; portable serialization verified, native acceptance pending. |
+| CAL-WINDOWS-ADAPTER | windows_runtime.py, windows_supervision.py under src/aion_indian_market_calendar | Native WinAPI shared/exclusive leases, inherited handles, reparse/DACL checks, dedicated CLI Job Object and owned interactive Task Scheduler task. Portable serialization and native Server 2022 Python 3.10-3.14 lifecycle verified; not Windows 11/reboot/production acceptance. |
 | CAL-CI-ARTIFACTS | .github/workflows/verify-candidate.yml, scripts/verify_release_artifacts.py | Read-only GitHub permissions, build once, exact wheel/sdist hash inventory, native 3-OS/5-Python package tests. No publishing or trust provisioning. |
 | CAL-INDEPENDENT-PROBE | scripts/verify_independent_contract.py | Preserved independent 42-case probe; historical fixtures packaged in sdist, actual installed imports required. |
 | CAL-OS-LIFECYCLE | scripts/verify_managed_lifecycle.py | Actual launchd/systemd/Task Scheduler checks, signed synthetic patch, interruption/recovery/rollback/teardown. Refuses unavailable user-manager or interactive session. |
@@ -210,3 +210,20 @@ flowchart LR
 ```
 
 Native fixture closure explicitly includes interpreter-conditional typing_extensions for Python3.10 controller bootstrap. Interrupted-setup markers are captured before CLI argument mutation; no runtime, permission or calendar-data change.
+
+
+## Native verification readback - 14 November 2026
+
+CAL-CI-ARTIFACTS has actual wheel/sdist/42-case execution on all 15 OS/Python
+combinations. CAL-WINDOWS-ADAPTER/CAL-OS-LIFECYCLE passed native Windows 17-case
+checks on Python3.10-3.14, including durable partial-enrollment cleanup; Linux
+16-case user-timer lifecycle also passed. Exact code 855e817 on the verification
+branch, not main. Real reboot, Windows11 normal-user, live trust/channel and
+protected deployment remain separate. No production edge or publish was added.
+The existing diagram describes the same tested boundaries; no architecture
+change in this documentation-only follow-up.
+
+
+## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
+
+Final provider readback: all23 verification jobs passed at code855e817. Actual native lifecycle receipts confirm owned task/job removal and no running supervisor;117 repeated lifecycle cases, not117 unique features. Current source changes are prose only. CAL-CI-ARTIFACTS/CAL-OS-LIFECYCLE proof updated; production/trust/reboot topology unchanged.
