@@ -257,3 +257,8 @@ No bootstrap signing identity or customer enrollment is activated. Package
 calendar/inference/trading behavior is unchanged. Windows updater rollout paused;
 prior native evidence retained. Exact future tag must reference the frozen tested
 commit; a merge commit changing that identity requires fresh acceptance.
+
+
+## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
+
+Final source-consistency follow-up updates contributor manual-release policy and tutorial bootstrap instructions. CAL-RELEASE/CAL-DOCS/examples remain same components and runtime graph. Rebuild final artifacts after these package-document changes; earlier hashes remain historical.

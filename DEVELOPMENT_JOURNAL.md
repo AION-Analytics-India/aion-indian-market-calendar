@@ -110,3 +110,8 @@ Read back all15 package artifacts and7 native lifecycle artifacts. All23 GitHub 
 ## 2026-11-14T17:01:49.256271+00:00 | Final correctness release preparation
 
 Prepared correctness-only1.8.0 public README/advisory/CHANGELOG and preserved older candidate history. Removed unsupported competitor-failure keywords. Replaced duplicate-prone automatic tag publisher with manual exact-artifact preflight/publish gates. Final artifacts will be rebuilt after copy/package changes, all15 native package combinations retained, optional managed lifecycle not repeated because implementation unchanged. Added real trusted-publisher OIDC preflight that mints/discards a short-lived credential without upload. Owner GO remains mandatory.
+
+
+## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
+
+Final scan found obsolete tag-triggered release guidance and local-only tutorial text after initial freeze. Corrected them before owner GO and required a fresh source/artifact acceptance. Runtime package code/data and optional updater behavior unchanged; no release mutation.

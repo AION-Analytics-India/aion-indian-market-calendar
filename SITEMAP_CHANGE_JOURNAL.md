@@ -112,3 +112,8 @@ Proof-only final readback for CAL-CI-ARTIFACTS and CAL-OS-LIFECYCLE. Actual prov
 ## 2026-11-14T17:01:49.256271+00:00 | Final correctness release preparation
 
 Added CAL-PUBLICATION-GATE/CAL-PUBLISHER-IDENTITY/CAL-ADVISORY, diagram and exact external CI/OIDC/PyPI boundaries. CAL-RELEASE now manual immutable-artifact promotion, not tag-triggered rebuild/upload. Test credentials are ephemeral, no package-runtime topology change. Calendar engine/data/managed lifecycle and protected production workloads untouched.
+
+
+## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
+
+Proof/documentation-only follow-up for CAL-RELEASE/CAL-DOCS. No runtime/dependency edge changed. Existing graph remains accurate; source freeze and hash evidence must advance for packaged prose.

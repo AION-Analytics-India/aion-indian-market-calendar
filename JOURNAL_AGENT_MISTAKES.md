@@ -91,3 +91,8 @@ No new implementation failure in final run. Earlier failed attempts remain histo
 ## 2026-11-14T17:01:49.256271+00:00 | Final correctness release preparation
 
 Earlier current CHANGELOG text still called Windows native acceptance untested after the23-job pass; corrected current entry and explicitly labelled old entries historical. Prior1.7.1publisher log confirms400 File already exists, not an assumed credential failure; prevent duplicate/rebuilt uploads. Local exploratory glob with no match and API response parse assumption failed safely, no provider mutation. Published1.7.1 alone has reproduced defects; do not generalize affected/yank range.
+
+
+## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
+
+Initial final-artifact freeze occurred before checking AGENTS release policy and tutorial current-state claims. Those two obsolete instructions were found in final review. Corrected and rebuilt; never reuse the preceding hashes or hide that superseded candidate. Do not infer missing files from a chained-command failure.

@@ -2,12 +2,13 @@
 
 A session-aware application needs more than a weekday check. Start with a named market segment, a timestamp carrying its timezone, and a known data-coverage interval. The public package supplies the session-checking interface; this example deliberately runs offline. [Package and usage](https://pypi.org/project/aion-indian-market-calendar/).
 
-This tutorial targets the local unreleased 1.8.0 candidate. Public PyPI still
-provides 1.7.1; do not present the candidate as downloadable there. Install a
-reviewed local artifact into a disposable virtual environment:
+This tutorial targets source version1.8.0. Verify its actual availability on
+[PyPI](https://pypi.org/project/aion-indian-market-calendar/1.8.0/) first; this
+source document alone does not establish publication. Upgrade the interpreter
+used by your application after the replacement is available:
 
 ```sh
-python -m pip install /reviewed/path/aion_indian_market_calendar-1.8.0-py3-none-any.whl
+python -m pip install --upgrade aion-indian-market-calendar
 ```
 
 The distribution declares Python >=3.10. This example was tested with Python 3.14.7 on macOS arm64; other runtimes were not tested here. [Distribution metadata](https://pypi.org/pypi/aion-indian-market-calendar/json).
@@ -15,7 +16,7 @@ The distribution declares Python >=3.10. This example was tested with Python 3.1
 Save the following as `offline_session_checks.py` and run `python examples/offline_session_checks.py`. Set the cache to a writable local directory before importing. The explicit offline flag prevents the package's normal public-data refresh. Offline results cannot include subsequently announced closures. [Offline configuration](https://pypi.org/project/aion-indian-market-calendar/).
 
 ```python
-"""Unreleased local 1.8.0 candidate: deterministic offline session checks, not live exchange status."""
+"""Version1.8.0 offline session checks; not live exchange status."""
 import os
 from pathlib import Path
 # Configure before importing the package. Offline is explicit, not the default.

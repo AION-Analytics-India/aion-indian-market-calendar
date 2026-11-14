@@ -39,8 +39,12 @@ currency derivatives). It is maintained by AION Analytics.
   and `tests/test_no_telemetry.py` guard this and must stay green.
 - **Information, not advice.** The package reports when markets trade and settle. Nothing in the
   code or the documentation tells anyone what to trade.
-- **Releases** go only through the tag-triggered workflow in `.github/workflows/publish.yml`.
-  Never upload from a laptop, never force-push, never rewrite published history.
+- **Releases** go only through the manual exact-artifact workflow in
+  `.github/workflows/publish.yml`, after explicit founder GO. Its preflight mode
+  verifies the existing PyPI publisher without uploading. Publish mode requires
+  the exact approved source/run/hashes and v1.8.0 tag; a tag alone uploads nothing.
+  Never rebuild after artifact approval, upload from a laptop, force-push or
+  rewrite published history.
   Dated note, 25 October 2026: the founder granted a one-time exception to this rule for release
   1.6.0, which was uploaded to PyPI from a maintainer's machine with twine, because the publish
   workflow has never run in this repository. The rule stands for later releases.

@@ -88,3 +88,8 @@ Accept native lifecycle only after provider teardown readback, not a green build
 ## 2026-11-14T17:01:49.256271+00:00 | Final correctness release preparation
 
 Never publish pre-README-change artifacts after metadata changes. Build once, bind exact source/run/hashes, preserve immutable bytes, verify before retry and refuse existing versions. Never call a passing test/publisher token production managed-update trust. Never yank unspecified historical releases, auto-enable live workloads, or treat ordinary pip as opt-in. No source/default/tag/PyPI mutation before exact founder GO except authorized verification-branch CI.
+
+
+## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
+
+Before artifact freeze, scan active contributor rules, tutorials and examples as well as README/CHANGELOG. Any subsequent packaged documentation change requires rebuilding and reaccepting exact artifacts. Keep tests and production managed-update activation separate.
