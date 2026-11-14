@@ -86,3 +86,8 @@ Earlier active status copy still said Windows was not natively tested after its 
 ## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
 
 No new implementation failure in final run. Earlier failed attempts remain historical. Do not count later documentation commit bytes as the already built855e817 artifacts; record both source identities explicitly. Do not infer real reboot, Windows11 or production trust from the successful native CI.
+
+
+## 2026-11-14T17:01:49.256271+00:00 | Final correctness release preparation
+
+Earlier current CHANGELOG text still called Windows native acceptance untested after the23-job pass; corrected current entry and explicitly labelled old entries historical. Prior1.7.1publisher log confirms400 File already exists, not an assumed credential failure; prevent duplicate/rebuilt uploads. Local exploratory glob with no match and API response parse assumption failed safely, no provider mutation. Published1.7.1 alone has reproduced defects; do not generalize affected/yank range.

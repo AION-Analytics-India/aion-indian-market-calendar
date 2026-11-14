@@ -107,3 +107,8 @@ Proof-only update to CAL-CI-ARTIFACTS/CAL-OS-LIFECYCLE/CAL-WINDOWS-ADAPTER. Wind
 ## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
 
 Proof-only final readback for CAL-CI-ARTIFACTS and CAL-OS-LIFECYCLE. Actual provider states show no remaining owned running/scheduled/registered supervisors. No dependency or topology changed; NO_MAP_IMPACT runtime. Canonical map and current gate record agree.
+
+
+## 2026-11-14T17:01:49.256271+00:00 | Final correctness release preparation
+
+Added CAL-PUBLICATION-GATE/CAL-PUBLISHER-IDENTITY/CAL-ADVISORY, diagram and exact external CI/OIDC/PyPI boundaries. CAL-RELEASE now manual immutable-artifact promotion, not tag-triggered rebuild/upload. Test credentials are ephemeral, no package-runtime topology change. Calendar engine/data/managed lifecycle and protected production workloads untouched.

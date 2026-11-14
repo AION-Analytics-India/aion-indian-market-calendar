@@ -1,3 +1,28 @@
+# 1.8.0 - correctness release scope
+
+Publication status/date: [PyPI release files](https://pypi.org/project/aion-indian-market-calendar/1.8.0/).
+This source heading is not publication proof. [Dated correction and apology](docs/CORRECTNESS_ADVISORY_1_8_0.md).
+
+- Fix unknown-date refusal, aware IST date selection, phase boundaries, notified
+  NSE Muhurat behavior and loaded-reader refresh consistency. Preserve covered
+  CDS INR09:00-17:00IST and currency holidays.
+- Keep December7 closing-auction/derivatives rules effective-dated and preserve
+  explicit contract/data-horizon limits. Indian2027data remains unsupported.
+- Include complete wheel/sdist acceptance and immutable test fixtures.
+- Repair concurrent refresh accounting and native NTFS lock-contention handling.
+- Retain the experimental managed updater; production automatic installation
+  is not activated on any OS and Windows updater rollout is paused.
+- Use a manual exact-artifact publication gate; no tag-triggered duplicate upload,
+  no rebuild after approval, and no skip-existing concealment.
+- Existing1.7.1 users need a manual environment-specific upgrade and application
+  retest. Earlier affected-version ranges have not been independently established.
+
+## Historical candidate records below
+
+The following dated entries preserve earlier implementation/review state. Their
+superseded Windows/not-tested or release-ready descriptions are not current
+release authority; current scope is RELEASE_STATUS.md. History is not erased.
+
 # Current gate notice, 14 November 2026
 
 The Windows adapter and verification-only artifact CI are STAGED, not natively

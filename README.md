@@ -5,64 +5,70 @@ holidays, intraday phases and selected derivative expiries in India. No API key
 is required. This is not a live exchange-status feed, broker interface, order
 execution service or compliance guarantee. Exchange notices remain authoritative.
 
-## Release state
-
-Current gate authority: [RELEASE_STATUS.md](RELEASE_STATUS.md). This is an
-unreleased review branch. Native package and managed-updater checks have run
-on GitHub; exact dated results and scope are in RELEASE_STATUS.md. Actual
-reboot acceptance and production signing/channel activation remain blocked.
-
-This branch prepares **1.8.0**. It has not been published. The latest verified
-PyPI release is **1.7.1**, published 2 November 2026. Existing installations do
-not acquire Python fixes merely because another version is published.
+## Install or manually upgrade
 
 ```bash
-python -m pip install aion-indian-market-calendar
+python -m pip install --upgrade aion-indian-market-calendar
 ```
 
-Install from [PyPI](https://pypi.org/project/aion-indian-market-calendar/).
+This source describes **1.8.0**, a calendar-correctness release. Check
+[PyPI for available files and the actual publication date](https://pypi.org/project/aion-indian-market-calendar/1.8.0/).
+A source branch or this version heading alone is not proof of publication.
+Use the Python interpreter that runs your application; restart/retest that
+application under your own deployment procedure after upgrading.
+
 [Canonical source](https://github.com/AION-Analytics-India/aion-indian-market-calendar),
-[issues](https://github.com/AION-Analytics-India/aion-indian-market-calendar/issues),
-[contribution guide](CONTRIBUTING.md), [release history](CHANGELOG.md),
-[website](https://aionanalytics.in/open-source/indian-market-calendar) and
-[shared data](https://github.com/AION-Analytics-India/aion-market-calendar-data).
-The older documentation mirror is not the maintained implementation.
+[release history](CHANGELOG.md), [correction advisory](docs/CORRECTNESS_ADVISORY_1_8_0.md),
+[product page](https://aionanalytics.in/open-source/indian-market-calendar),
+[shared data](https://github.com/AION-Analytics-India/aion-market-calendar-data)
+and [issues](https://github.com/AION-Analytics-India/aion-indian-market-calendar/issues).
+No AION API key is required. MIT licensed.
 
-## Software updates require one-time owner setup
+## Important correction for earlier versions - 14 November 2026
 
-Ordinary pip installation does not register a service or enable software
-installation. Older users must manually bootstrap once to the reviewed
-`aion-indian-market-calendar[updates]` release. The original pip environment is
-then left unchanged. Only applications launched through the explicitly adopted
-managed runtime receive its compatible, approved Python patches.
+Independent checks reproduced correctness defects in the published **1.7.1**
+wheel: some uncovered dates returned assumed trading answers, aware date helpers
+could select the wrong IST date, and some continuous-session/Muhurat and
+loaded-data-refresh answers were incorrect. We apologize for these errors and
+the uncertainty they can cause developers.
 
-The staged `update_lifecycle setup` command detects the current version and
-runtime dependencies, requires consent, verifies an owner-provided trust policy
-and bootstrap artifacts, creates isolated controller/runtime environments, and
-registers a user-scoped launchd job on macOS or systemd timer on Linux. A
-Windows Task Scheduler adapter has passed the actual scheduled-update lifecycle
-on Windows Server 2022 x64 with Python 3.10-3.14. This is not Windows 11 desktop
-or real reboot acceptance. The
-`--enable-auto-install` flag is separate from consent to notifications. Nothing
-is enabled by importing the calendar or refreshing calendar data.
+For example, the 1.7.1 class helper returned `True` for an unsupported
+`2027-01-26T10:00:00+05:30` market-open query. Version 1.8.0 raises `ValueError`
+for that unknown date. It does **not** add 2027 calendar coverage. The
+[dated advisory and nine-case before/after matrix](docs/CORRECTNESS_ADVISORY_1_8_0.md)
+identify the tested affected version, exact inputs, verified corrections and
+limits. Earlier versions have not been independently established as affected by
+these same nine cases. No live trade or loss is inferred from the package tests.
 
-This lifecycle supports status, start, stop, disable, uninstall and verified
-rollback. It recovers protocol-2 interrupted-update locks after all holders
-have exited. Windows automatic installation is not approved for use. User jobs resume at
-login/user-manager startup, not necessarily before login. Linux pre-login
-operation requires an already approved lingering user manager; setup never
-changes that setting.
+A current holiday cache does not repair Python-code defects. Existing users
+must manually upgrade the environment used by their application, confirm the
+installed version and retest schedule-critical behavior against exchange notices.
+Yanking a release does not uninstall it; exact pins/lockfiles may still select it.
 
-Production signing identity, HTTPS channels and their operational availability
-still require release-owner verification. Disposable-key tests are not a
-production-ready service. See [setup, ownership and trust](docs/UPDATE_CONTRACT.md).
-Calendar-data refresh is independent. No 2027 calendar coverage is added.
+```bash
+python -c "import importlib.metadata as m; print(m.version('aion-indian-market-calendar'))"
+```
+
+## Platforms and release scope
+
+| Capability | macOS | Linux | Windows |
+| --- | --- | --- | --- |
+| Calendar library, Python 3.10-3.14 | Native wheel/sdist checks | Native wheel/sdist checks | Native x64 wheel/sdist checks |
+| Optional managed-updater lifecycle | launchd tested in isolation | User systemd tested in isolation | Task Scheduler tested on Server 2022 x64; rollout paused |
+| Production automatic code installation | Not activated | Not activated | Paused; not activated |
+
+One universal wheel serves these tested library platforms. Python 3.9 is
+unsupported. Linux managed setup requires working `venv`/`ensurepip`; it refuses
+an installation missing those facilities. Windows 11 normal-user acceptance
+and real reboot/logon acceptance remain unverified. These optional-updater
+gates do not negate the separately tested calendar library corrections.
+See [build-time evidence and scope](RELEASE_STATUS.md).
 
 ## Covered dates and markets
 
-The candidate bundles Indian dataset 2026.11.14, with declared coverage
+Version 1.8.0 bundles Indian dataset 2026.11.14, with declared coverage
 **2026-01-01 through 2026-12-25**. No Indian 2027 holiday payload is available
-in this candidate. Unsupported session/date questions raise, including
+in this version. Unsupported session/date questions raise, including
 next-trading-day searches that exhaust coverage. A calculated seasonal time
 extending into another year is not holiday coverage for that year.
 
@@ -99,7 +105,7 @@ and the versioned bundle supply scope and provenance; exchange notices prevail.
 ## Effective 7 December 2026
 
 [SEBI circular HO/47/11/11(3)2025-MRD-POD2/I/23843/2026, 15 October 2026](https://www.sebi.gov.in/sebi_data/attachdocs/oct-2026/1792079571420.pdf)
-is represented as an effective-dated rule already in the candidate:
+is represented by an effective-dated rule in version 1.8.0:
 
 - F&O-underlying cash continuous matching ends at 15:30 IST; CAS is 15:30-15:40.
 - The general equity-derivatives segment continues until 15:45.
@@ -157,7 +163,7 @@ The caller remains responsible for completeness of custom records.
 `holidays(year=...)` is a list for the covered portion, not a claim of a full
 calendar year. `covers()` reports the precise interval.
 
-## Two independent update mechanisms
+## Calendar data refresh and Python software updates
 
 **Calendar data:** ordinary online loads may check compatible approved public
 data, with a daily check throttle and a bounded synchronization check in loaded
@@ -182,8 +188,8 @@ candidate environment, installs without an index, runs compatibility checks,
 and atomically promotes an environment pointer. It retains the previous
 accepted environment for explicit rollback. It does not restart an application.
 
-External PyPI users can explicitly adopt the supported managed lifecycle or
-use their own authorized package automation. AION-protected deployments require
+External PyPI users need their own authorized package automation. The managed
+lifecycle is experimental and not currently production-activated. AION-protected deployments require
 their independently approved controller and cannot use customer-mode admission. **Existing 1.7.1 installations cannot retroactively gain it.**
 See [the complete update contract](docs/UPDATE_CONTRACT.md).
 
@@ -195,75 +201,43 @@ updates. The historical [telemetry audit](docs/TELEMETRY_AUDIT.md) and all prior
 [release notes](CHANGELOG.md) are retained; newer behavior does not repair old
 installations automatically. Code and documentation are MIT licensed.
 
-### Explicit managed-runtime onboarding
+## Optional managed software updates: experimental, not production-activated
 
-These commands require release-owner-provided policy, approved bootstrap
-manifest/hash and a platform-compatible local wheel closure. Those production
-inputs are not bundled, and the candidate is not yet a public release.
+**Ordinary pip installation or upgrade does not register a background task,
+enroll a managed environment, switch an application interpreter or silently
+install future Python patches.** Calendar-data refresh is a separate mechanism.
 
-This is an engineering template, not a ready customer quick-start. The
-production policy, independent root fingerprint, signed bootstrap distribution
-and approved wheel closure are not yet supplied. Do not attempt to install an
-unpublished 1.8.0 from PyPI. For isolated review use the exact built local wheel:
+The optional updater was exercised with disposable signed channels on macOS,
+Linux and Windows. Its production signing identity, approved release channel,
+bootstrap distribution and protected-workload acceptance remain blocked.
+Windows updater rollout is paused. Do not treat the engineering setup interface
+as a ready customer one-command enrollment service.
 
-```bash
-python -m pip install "/reviewed/path/aion_indian_market_calendar-1.8.0-py3-none-any.whl[updates]"
-python -m aion_indian_market_calendar.update_lifecycle setup \
-  --root /user-owned/calendar-managed --consent --enable-auto-install \
-  --policy approved-policy.json --bootstrap-manifest bootstrap.json \
-  --approved-sha256 INDEPENDENT_APPROVED_SHA256 --wheelhouse approved-wheels
-python -m aion_indian_market_calendar.update_lifecycle status \
-  --root /user-owned/calendar-managed
-python -m aion_indian_market_calendar.update_lifecycle run \
-  --root /user-owned/calendar-managed -- -I -c 'import importlib.metadata as m; print(m.version("aion-indian-market-calendar"))'
-python -m aion_indian_market_calendar.update_lifecycle stop \
-  --root /user-owned/calendar-managed
-python -m aion_indian_market_calendar.update_lifecycle start \
-  --root /user-owned/calendar-managed --consent
-python -m aion_indian_market_calendar.update_lifecycle disable \
-  --root /user-owned/calendar-managed
-python -m aion_indian_market_calendar.update_lifecycle uninstall \
-  --root /user-owned/calendar-managed
-```
+A future approved setup will require explicit consent, a trusted policy and
+approved bootstrap artifacts. Notification-only consent is distinct from
+unattended-install consent. It manages a separately adopted runtime and leaves
+the original pip environment unchanged; only applications explicitly launched
+through that runtime use its accepted version. Pins, supported patch series,
+signature/health checks, offline policy and active-workload admission can defer
+or reject an update. The pinned updater controller needs a separately reviewed
+bootstrap; runtime patches do not automatically replace it.
 
-Omit `--enable-auto-install` during setup for notifications only. `stop` pauses
-the current schedule; `disable` also prevents resumption after login/reboot.
-Uninstall removes the owned supervisor, retaining managed versions and receipts
-for recovery. Plain `pip uninstall` does not unregister an OS service: run the
-lifecycle uninstall first. No package command changes another Python environment.
+Availability notices are local receipts/output, not email, desktop toasts or
+push messages. No universal all-future-patch upgrade promise is made. Full
+engineering controls, disable/uninstall/rollback and ownership boundaries are in
+[UPDATE_CONTRACT.md](docs/UPDATE_CONTRACT.md). No production signing credential
+or default production channel is included in this package.
 
-The release channel is separate from PyPI. Uploading a wheel alone does not
-announce it to managed devices. Only signed, non-revoked, unexpired releases in
-the owner-approved major/minor series and exact dependency lock are eligible.
-`run` holds a workload lease; automatic updates defer while that runtime is
-active. Applications outside this launcher are not managed or restarted.
-Protected AION deployments also require a hash-pinned admission controller.
+## Verify and report a defect
 
-The low-level `automatic_updates check/watch` and `managed_updater` commands
-remain for existing operator integrations. They do not register persistent
-supervision and must not be presented as the customer onboarding lifecycle.
+The source distribution includes the complete tests and immutable historical
+fixtures. The CI workflow installs wheel and sdist separately and verifies their
+code/data/license/README identity and installed import paths. Its independent
+42-case probe is `scripts/verify_independent_contract.py`; the artifact verifier
+supplies its fixture paths and isolated cache. Reproduce using the exact source
+and artifacts recorded in the release evidence, never an editable fallback.
 
-
-### Windows staged contract
-
-The adapter uses a current interactive user token, least privilege, no stored
-password and no S4U/SYSTEM fallback. It proposes periodic checks while signed
-in and catch-up at logon. It does not promise network checks while logged out.
-Native locks, ACL/reparse protection and worker process-tree cleanup require
-Windows execution. Native CI exercises leases, process-tree termination and complete signed
-scheduled upgrade/recovery/teardown. Windows 11 normal-user and real reboot/logon
-acceptance remain pending. Portable XML
-checks and a Windows runner tag are not substitutes for those tests.
-
-The installed library and optional updater have separate platform gates.
-Python 3.9 is unsupported by metadata. Python 3.10-3.14 is the candidate library
-matrix; see RELEASE_STATUS.md for actual tested scope. No ordinary pip install
-registers an OS task. No automatic installation is production-approved yet.
-
-Matching setup repeats return actual status without changing consent or
-re-enabling disabled jobs. Changed/legacy roots require owner reconciliation.
-Notification-only mode records local availability; no email or desktop toast
-is implemented. Runtime patches do not replace the pinned updater controller,
-which needs a separate reviewed bootstrap. Arbitrary application dependencies
-are not copied into the managed runtime. The inline version command above is
-the tested application example; application integration is separately owned.
+Report the package version, Python/OS, exchange/segment, timezone-aware timestamp,
+actual/expected result, public circular and minimal reproducer through
+[GitHub issues](https://github.com/AION-Analytics-India/aion-indian-market-calendar/issues).
+Do not include credentials, account records or proprietary trading inputs.

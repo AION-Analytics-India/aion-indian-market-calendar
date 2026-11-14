@@ -105,3 +105,8 @@ Native GitHub artifact matrix passes all 15 OS/Python combinations. Actual Windo
 ## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
 
 Read back all15 package artifacts and7 native lifecycle artifacts. All23 GitHub jobs passed;17 lifecycle cases per Windows3.10-3.14 and16 per Mac/Linux3.13. Verified exact wheel/sdist bytes against provider inventory. Current change records results only; no runtime edits, synthetic patch publication or production change.
+
+
+## 2026-11-14T17:01:49.256271+00:00 | Final correctness release preparation
+
+Prepared correctness-only1.8.0 public README/advisory/CHANGELOG and preserved older candidate history. Removed unsupported competitor-failure keywords. Replaced duplicate-prone automatic tag publisher with manual exact-artifact preflight/publish gates. Final artifacts will be rebuilt after copy/package changes, all15 native package combinations retained, optional managed lifecycle not repeated because implementation unchanged. Added real trusted-publisher OIDC preflight that mints/discards a short-lived credential without upload. Owner GO remains mandatory.

@@ -83,3 +83,8 @@ After native execution, replace stale current-readiness claims with exact run/pl
 ## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
 
 Accept native lifecycle only after provider teardown readback, not a green build or promoted pointer. Separate tested runtime commit/artifact hashes from later documentation-only commits. Never count repeated interpreter tests as unique features or infer owner trust approval from test signatures.
+
+
+## 2026-11-14T17:01:49.256271+00:00 | Final correctness release preparation
+
+Never publish pre-README-change artifacts after metadata changes. Build once, bind exact source/run/hashes, preserve immutable bytes, verify before retry and refuse existing versions. Never call a passing test/publisher token production managed-update trust. Never yank unspecified historical releases, auto-enable live workloads, or treat ordinary pip as opt-in. No source/default/tag/PyPI mutation before exact founder GO except authorized verification-branch CI.

@@ -1,78 +1,101 @@
 name: publish
 
-# Historical tag publisher; do not tag the candidate until all release gates
-# and the PyPI publishing identity/environment have owner approval. Prior test
-# success does not prove publishing success. Verification-only work belongs in
-# verify-candidate.yml and never grants production trust or release authority.
+# No automatic tag upload. Founder GO binds exact source/run/artifact hashes.
 on:
-  push:
-    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [preflight, publish]
+        default: preflight
+        required: true
+      accepted_run_id: {type: string, required: true}
+      source_sha: {type: string, required: true}
+      wheel_sha256: {type: string, required: true}
+      sdist_sha256: {type: string, required: true}
+      founder_approval: {type: string, required: false, default: ''}
 
 permissions:
   contents: read
+concurrency:
+  group: calendar-pypi-1.8.0
+  cancel-in-progress: false
 
 jobs:
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        # Windows is not optional: it has no system tz database, so a missing
-        # tzdata dependency breaks every session check there and passes
-        # everywhere else. The lowest version tested is the floor declared in
-        # pyproject.toml (requires-python >=3.10); 3.9 was tested until 1.6.0
-        # although pip refuses to install the package there.
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-    runs-on: ${{ matrix.os }}
+  gate:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    env:
+      APPROVED_SOURCE: ${{ inputs.source_sha }}
+      APPROVED_RUN: ${{ inputs.accepted_run_id }}
+      APPROVED_WHEEL: ${{ inputs.wheel_sha256 }}
+      APPROVED_SDIST: ${{ inputs.sdist_sha256 }}
+      RELEASE_MODE: ${{ inputs.mode }}
+      FOUNDER_APPROVAL: ${{ inputs.founder_approval }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "${{ matrix.python }}" }
-      - run: pip install -e ".[test]"
-      - name: Tests
-        run: pytest -q
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.13'}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: calendar-candidate
+          path: accepted
+          run-id: ${{ inputs.accepted_run_id }}
+          github-token: ${{ github.token }}
+      - name: Verify exact accepted source, jobs, artifacts and unused PyPI version
         env:
-          AION_IN_CALENDAR_OFFLINE: "1"
-
-  no-egress:
-    # Run on its own so it cannot be lost in a matrix summary. This is the test
-    # that keeps telemetry gone; if it fails, the release must not happen.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.13" }
-      - run: pip install -e . pytest
-      - name: Nothing reaches the network unless a refresh was asked for
-        run: pytest tests/test_no_egress.py -q
-      - name: No identifier header anywhere in the source
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          if grep -rnE 'X-AION-[A-Za-z-]*(Install|Telemetry)' src/ --include='*.py' \
-             | grep -v '^\s*#' | grep -vi 'docstring'; then
-            echo "an identifier header appears in source"; exit 1
-          fi
-          echo "clean"
+          python scripts/verify_publication_gate.py gate --dist accepted/dist --inventory accepted/ci/BUILD_INVENTORY.json --source-sha "$APPROVED_SOURCE" --source-root . --run-id "$APPROVED_RUN" --wheel-sha "$APPROVED_WHEEL" --sdist-sha "$APPROVED_SDIST" --mode "$RELEASE_MODE" --approval "$FOUNDER_APPROVAL" --output gate-result.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: publication-accepted
+          path: |
+            accepted/
+            gate-result.json
+          retention-days: 14
 
-  build:
-    needs: [test, no-egress]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.13" }
-      - run: pip install build twine
-      - run: python -m build
-      - run: twine check dist/*
-      - uses: actions/upload-artifact@v4
-        with: { name: dist, path: dist/ }
-
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
+  publisher-identity:
+    needs: gate
+    runs-on: ubuntu-24.04
     environment: pypi
     permissions:
-      id-token: write          # the OIDC token PyPI verifies. No API token.
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/download-artifact@v4
-        with: { name: dist, path: dist/ }
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.13'}
+      - name: Verify configured PyPI trusted publisher without uploading
+        run: python scripts/verify_publication_gate.py identity --output publisher-identity.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: publisher-identity
+          path: publisher-identity.json
+          retention-days: 14
+
+  publish:
+    if: inputs.mode == 'publish'
+    needs: [gate, publisher-identity]
+    runs-on: ubuntu-24.04
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with: {name: publication-accepted, path: approved}
+      - name: Recheck immutable bytes immediately before upload
+        env:
+          APPROVED_WHEEL: ${{ inputs.wheel_sha256 }}
+          APPROVED_SDIST: ${{ inputs.sdist_sha256 }}
+        run: |
+          printf '%s  %s\n%s  %s\n' "$APPROVED_WHEEL" 'approved/accepted/dist/aion_indian_market_calendar-1.8.0-py3-none-any.whl' "$APPROVED_SDIST" 'approved/accepted/dist/aion_indian_market_calendar-1.8.0.tar.gz' | sha256sum --check
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
+        with:
+          packages-dir: approved/accepted/dist/
+          skip-existing: false

@@ -26,8 +26,6 @@ keywords = [
   "Python library for Indian stock market holidays",
   "MCX evening session calendar Python",
   "Muhurat trading calendar API",
-  "aion-indian-market-calendar vs pandas_market_calendars",
-  "Why pandas_market_calendars fails for Indian exchanges",
   "nse-holidays",
   "bse-trading-calendar",
   "indian-trading-holidays",

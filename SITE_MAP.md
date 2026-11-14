@@ -19,7 +19,7 @@ Updated 14 November 2026 for the isolated 1.8.0 candidate. Published PyPI remain
 | CAL-LEGACY | src/aion_indian_market_calendar/live_overrides.py, live_events.json | Retained compatibility/history helpers, not the verified-store adoption path. Retired taxonomy activation never fetches or updates another product. |
 | CAL-TESTS | tests/ | Original suite, lifecycle and concurrency tests; release repairs and updater contract tests. Fixture snapshots dataset_2026_10_18 and dataset_2026_11_03 are immutable historical inputs. |
 | CAL-PACKAGE | pyproject.toml, MANIFEST.in | MIT, Python >=3.10, pytz/tzdata; tested PEP639 floor setuptools >=77.0.3. Complete tests/fixtures in sdist. |
-| CAL-RELEASE | .github/workflows/publish.yml, scripts/ | Tag-triggered tests/build/publication; no trigger invoked by this work. |
+| CAL-RELEASE | .github/workflows/publish.yml, scripts/ | Manual preflight/publish, approved source/run/artifact hashes; no automatic tag upload or rebuild; publication requires exact tag and founder GO. |
 | CAL-DOCS | README.md, docs/UPDATE_CONTRACT.md, docs/tutorials/, examples/ | Candidate behavior and update contract, source examples. CHANGELOG.md and docs/TELEMETRY_AUDIT.md preserve history. |
 | CAL-RECORDS | DEVELOPMENT_JOURNAL.md, JOURNAL_AGENT_MISTAKES.md, NEVER_DO_AGAIN.md, SITEMAP_CHANGE_JOURNAL.md | Distinct engineering, actual mistakes, prevention and architecture histories. |
 
@@ -227,3 +227,33 @@ change in this documentation-only follow-up.
 ## 2026-11-14T16:35:41.515354+00:00 | Final native provider readback
 
 Final provider readback: all23 verification jobs passed at code855e817. Actual native lifecycle receipts confirm owned task/job removal and no running supervisor;117 repeated lifecycle cases, not117 unique features. Current source changes are prose only. CAL-CI-ARTIFACTS/CAL-OS-LIFECYCLE proof updated; production/trust/reboot topology unchanged.
+
+
+## Final correctness-only publication contract - 14 November 2026
+
+| Component | Path | Owner and boundary |
+| --- | --- | --- |
+| CAL-PUBLICATION-GATE | scripts/verify_publication_gate.py; tests/test_publication_gate.py | Release owner; actual artifact/source/code/data/license/README identity, required native jobs, no fork/failed run, exact approved hashes, unused PyPI version; public read-only GitHub/PyPI metadata |
+| CAL-PUBLISHER-IDENTITY | publish.yml publisher-identity job | Existing GitHub/PyPI trust identity, environment pypi; mint/discard ephemeral credential, no upload or saved secret; independent of experimental runtime update signer |
+| CAL-ADVISORY | docs/CORRECTNESS_ADVISORY_1_8_0.md | Dated1.7.1nine-case evidence/apology, upgrade and data/managed-runtime limits |
+
+```mermaid
+flowchart LR
+  Source[Approved frozen source] --> Build[Build once and inspect]
+  Build --> Accepted[Native wheel and sdist acceptance]
+  Accepted --> Bundle[Immutable accepted artifact inventory]
+  Bundle --> Gate[Exact source/run/hash and unused version gate]
+  Gate --> OIDC[Existing PyPI OIDC identity check, no upload]
+  OIDC --> Preflight[Read-only preflight receipt]
+  Gate --> GO[Exact tag and explicit founder GO]
+  GO --> Upload[Same accepted bytes to PyPI]
+  Upload --> Readback[Clean PyPI download/install readback]
+```
+
+Verification-only builds do not receive publishing credentials. Manual preflight
+and publish are separate modes; preflight always refuses publication permission.
+Only the publish job may upload, with least job permissions and no skip-existing.
+No bootstrap signing identity or customer enrollment is activated. Package
+calendar/inference/trading behavior is unchanged. Windows updater rollout paused;
+prior native evidence retained. Exact future tag must reference the frozen tested
+commit; a merge commit changing that identity requires fresh acceptance.

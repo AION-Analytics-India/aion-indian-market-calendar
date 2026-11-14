@@ -1,8 +1,8 @@
-# 1.8.0 correction release notes (draft, not published)
+# 1.8.0 correction release notes
 
 Release state and platform evidence: RELEASE_STATUS.md. Exact published version,
 date, final wheel/sdist hashes and approved tag must be inserted only after
-actual release readback. No fixed PyPI release exists yet.
+actual release readback. This source document alone is not publication evidence.
 
 The candidate corrects unsupported-date answers, aware datetime-to-IST date
 selection, continuous-matching versus auction boundaries, covered NSE Muhurat
@@ -25,9 +25,19 @@ Calendar-data refresh is independent of Python software upgrades. Normal pip
 installation registers no task. The staged managed updater requires explicit
 onboarding, trusted signed distribution and platform acceptance. It leaves the
 original pip environment unchanged. No production automatic-install capability
-is approved. Windows implementation and native validation are separate; actual
+is approved. Windows updater rollout is paused. Native isolated validation passed; actual
 reboot and production signing/channel gates remain open.
 
-Public correction/advisory and exact before/after matrix are staged in the
-private publication handoff. Release owner must approve them and the final
+Public correction, apology and exact nine-case matrix are in
+[docs/CORRECTNESS_ADVISORY_1_8_0.md](docs/CORRECTNESS_ADVISORY_1_8_0.md). Release owner must approve them and the final
 artifacts before any upload, tag, merge, advisory or platform change.
+
+
+Upgrade after confirming the published replacement:
+
+```bash
+python -m pip install --upgrade aion-indian-market-calendar
+```
+
+A normal pip upgrade installs no background updater and does not switch existing
+application runtimes. Managed updates are experimental and not production-activated.

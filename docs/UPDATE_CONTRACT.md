@@ -1,3 +1,14 @@
+# Current correctness-only release boundary - 14 November 2026
+
+The following engineering controls are experimental. Production automatic
+software installation is not activated on any OS; Windows updater rollout is
+paused by the release owner. Ordinary pip/data refresh enables no supervisor.
+No default production signer, approved customer bootstrap or live release
+channel is bundled. Native disposable tests are evidence of implementation,
+not approval for customer or protected AION workload enrollment. Calendar1.8.0
+correctness publication is a separate decision. Historical design details below
+remain useful for isolated engineering, not a one-command customer quick-start.
+
 Current release gates: [RELEASE_STATUS.md](../RELEASE_STATUS.md). Unreleased candidate; production trust/channel not configured.
 
 # Calendar-data refresh and managed software upgrades

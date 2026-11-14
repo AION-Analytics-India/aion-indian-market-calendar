@@ -4,7 +4,16 @@ on:
   push:
     branches: [ci/calendar-1.8-acceptance]
   workflow_dispatch:
+    inputs:
+      run_managed_lifecycle:
+        type: boolean
+        default: false
+        description: 'Disposable lifecycle only, no production activation'
   workflow_call:
+    inputs:
+      run_managed_lifecycle:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -26,12 +35,14 @@ jobs:
           python -m build
           python -m twine check dist/*
           python scripts/verify_release_artifacts.py inventory --dist dist --source-sha "$GITHUB_SHA" --output ci/BUILD_INVENTORY.json
+          python scripts/verify_publication_gate.py inspect --dist dist --inventory ci/BUILD_INVENTORY.json --source-sha "$GITHUB_SHA" --source-root . --output ci/PUBLICATION_PREFLIGHT.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: calendar-candidate
           path: |
             dist/
             ci/BUILD_INVENTORY.json
+            ci/PUBLICATION_PREFLIGHT.json
           retention-days: 14
 
   artifacts:
@@ -63,6 +74,7 @@ jobs:
           retention-days: 14
 
   managed-lifecycle:
+    if: inputs.run_managed_lifecycle == true
     needs: build
     timeout-minutes: 30
     strategy:

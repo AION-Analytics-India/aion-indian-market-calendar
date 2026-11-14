@@ -3,6 +3,7 @@ recursive-include tests *.py *.json
 recursive-include docs *.md
 recursive-include examples *.py
 recursive-include scripts *.sh *.py
+recursive-include .github/workflows *.yml
 recursive-include src/aion_indian_market_calendar/data *.json
 exclude .locks/*
 global-exclude *.pyc
