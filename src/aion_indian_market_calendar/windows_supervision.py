@@ -69,11 +69,29 @@ try {$task=$folder.GetTask($d.label)} catch {
 function Confirm-Owned($t){
  $script:phase='task-ownership'
  $v=$t.Definition
- if($v.RegistrationInfo.Description -ne $d.label -or $v.Principal.UserId -ne $sid -or
-    $v.Principal.LogonType -ne 3 -or $v.Principal.RunLevel -ne 0 -or
-    $v.Actions.Count -ne 1 -or $v.Actions.Item(1).Type -ne 0 -or
-    $v.Actions.Item(1).Path -ne $d.python -or $v.Actions.Item(1).Arguments -cne $d.arguments -or
-    $v.Actions.Item(1).WorkingDirectory -ne $d.root){throw 'Task ownership/action mismatch'}
+ $script:phase='task-owner-resolve'
+ $principal=$v.Principal.UserId
+ if([string]::IsNullOrEmpty($principal)){throw 'Missing task owner'}
+ if($principal -match '^S-1-'){
+  $ownerSid=([System.Security.Principal.SecurityIdentifier]::new($principal)).Value
+ }else{
+  $ownerSid=([System.Security.Principal.NTAccount]::new($principal)).Translate([System.Security.Principal.SecurityIdentifier]).Value
+ }
+ $checks=[ordered]@{
+  description=($v.RegistrationInfo.Description -eq $d.label)
+  owner=($ownerSid -eq $sid)
+  logon=($v.Principal.LogonType -eq 3)
+  level=($v.Principal.RunLevel -eq 0)
+  actions=($v.Actions.Count -eq 1)
+  type=($v.Actions.Item(1).Type -eq 0)
+  path=($v.Actions.Item(1).Path -eq $d.python)
+  arguments=($v.Actions.Item(1).Arguments -ceq $d.arguments)
+  directory=($v.Actions.Item(1).WorkingDirectory -eq $d.root)
+ }
+ foreach($entry in $checks.GetEnumerator()){
+  if(!$entry.Value){$script:phase='task-ownership-'+$entry.Key;throw 'Task ownership/action mismatch'}
+ }
+ $script:phase='task-acl'
  $sddl=$t.GetSecurityDescriptor(4)
  $sd=[System.Security.AccessControl.RawSecurityDescriptor]::new($sddl)
  if($null -eq $sd.DiscretionaryAcl){throw 'Null task DACL refused'}
@@ -83,6 +101,11 @@ function Confirm-Owned($t){
  }
 }
 if($task){Confirm-Owned $task}
+function Stop-Owned($t){
+ try{$t.Stop(0)}catch{
+  if($_.Exception.GetBaseException().HResult -ne -2147216629){throw}
+ }
+}
 switch($d.operation){
  'install' {
   if($session -eq 0){throw 'Interactive enrollment required'}
@@ -95,9 +118,9 @@ switch($d.operation){
   Confirm-Owned $task
  }
  'start' {if(!$task){throw 'Owned task missing'};$task.Enabled=$true;$null=$task.Run($null)}
- 'stop' {if($task){$task.Enabled=$false;$task.Stop(0)}}
- 'disable' {if($task){$task.Enabled=$false;$task.Stop(0)}}
- 'uninstall' {if($task){$task.Enabled=$false;$task.Stop(0)}}
+ 'stop' {if($task){$task.Enabled=$false;Stop-Owned $task}}
+ 'disable' {if($task){$task.Enabled=$false;Stop-Owned $task}}
+ 'uninstall' {if($task){$task.Enabled=$false;Stop-Owned $task}}
  'status' {}
  default {throw 'Unknown operation'}
 }
@@ -135,13 +158,17 @@ class WindowsService:
               'aion_indian_market_calendar.update_lifecycle','worker','--root',str(s.root)]),**extra})
 
     def install(self):
-        from .update_lifecycle import controller_python, private_file
+        from .update_lifecycle import controller_python, private_file, write_config
         s = self.service;identity = win.interactive_identity()
         if s.directory.exists():private_file(s.directory)
         else:win.create_private_directory(s.directory)
         if any(p.exists() for p in s.files):raise FileExistsError('Task record exists; no overwrite')
         raw = task_xml(s.root,s.label,controller_python(s.root),identity['sid'],s.cfg['policy']['poll_seconds'])
         s.files[0].write_bytes(raw)
+        # Durable intent before the provider mutation. A killed/failed setup can
+        # still reconcile and uninstall this exact hash-owned disabled task.
+        s.cfg['service']=s.record()
+        write_config(s.root,s.cfg)
         try:self.call('install',xml=raw.decode('utf-8'))
         except BaseException:
             # Retain the task definition on an ambiguous provider failure; an

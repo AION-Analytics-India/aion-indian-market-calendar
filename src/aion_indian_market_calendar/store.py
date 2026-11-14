@@ -469,7 +469,12 @@ def _adoption_lock():
         try:
             fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
             break
-        except FileExistsError:
+        except OSError as exc:
+            # NTFS can report a delete-pending/sharing state as access denied
+            # instead of EEXIST. Retry only known native contention errors;
+            # never steal the marker or weaken directory permissions.
+            if not isinstance(exc, FileExistsError) and getattr(exc, 'winerror', None) not in (5, 32, 33):
+                raise
             if _time.monotonic() >= deadline:
                 raise TimeoutError("another data adopter owns the cache lock")
             _time.sleep(0.01)
@@ -478,7 +483,15 @@ def _adoption_lock():
         yield
     finally:
         os.close(fd)
-        lock.unlink()
+        deadline = _time.monotonic() + 5
+        while True:
+            try:
+                lock.unlink()
+                break
+            except OSError as exc:
+                if getattr(exc, 'winerror', None) not in (5, 32, 33) or _time.monotonic() >= deadline:
+                    raise
+                _time.sleep(0.01)
 
 
 def refresh(force: bool = False) -> str:

@@ -169,6 +169,21 @@ def test_adoption_timeout_reconciles_only_verified_peer_completion(env, monkeypa
         assert 'another data adopter' in result
 
 
+@pytest.mark.parametrize('code', [5, 32, 33])
+def test_native_delete_pending_creation_is_bounded_contention(env, monkeypatch, code):
+    store.CACHE_DIR.mkdir()
+    original=os.open;attempts=[]
+    def create(path, flags, *args, **kwargs):
+        if Path(path)==store.CACHE_DIR/'.adoption.lock':
+            attempts.append(True)
+            if len(attempts)==1:
+                exc=PermissionError('Synthetic native sharing boundary');exc.winerror=code;raise exc
+        return original(path,flags,*args,**kwargs)
+    monkeypatch.setattr(os,'open',create)
+    with store._adoption_lock():assert (store.CACHE_DIR/'.adoption.lock').exists()
+    assert len(attempts)==2 and not (store.CACHE_DIR/'.adoption.lock').exists()
+
+
 class _Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass

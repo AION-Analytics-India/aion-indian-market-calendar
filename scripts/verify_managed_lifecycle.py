@@ -130,6 +130,10 @@ try:
  no=cli('setup','no-consent','--policy',POLICY,'--bootstrap-manifest',APPROVAL,'--approved-sha256',HASH,'--wheelhouse',S,root=R/'not-consented',expected=None)
  assert no.returncode!=0 and not (R/'not-consented').exists();record('no_supervisor_without_explicit_consent')
  created.append(MANAGED);setup(MANAGED,True)
+ before_setup=(MANAGED/'SUPERVISOR.json').read_bytes()
+ setup(MANAGED,True)
+ assert (MANAGED/'SUPERVISOR.json').read_bytes()==before_setup
+ record('matching_setup_is_idempotent_without_reenrollment')
  status=json.loads(cli('status','status-after-setup').stdout);assert status['automatic_installation_enabled'];RESULT['initial_status']=status
  until(lambda:any(x.get('kind')=='supervisor_check' for x in receipts()))
  record('actual_os_supervisor_registered_after_setup_terminal_exit',supervision=status['supervision'])
@@ -179,6 +183,41 @@ try:
  assert json.loads((notify/'runtime/CURRENT.json').read_text())['version']=='1.8.0';record('notification_only_onboarding_does_not_install_available_release')
  cli('offline','offline-stop',root=notify);requests=len(RESULT['requests']);out=cli('check','offline-check',root=notify);assert json.loads(out.stdout)['status']=='offline' and len(RESULT['requests'])==requests;record('offline_no_network_no_install')
  cli('uninstall','notify-uninstall',root=notify)
+ if os.name=='nt':
+  partial=R/'partial setup';created.append(partial);marker=R/'partial-registered'
+  code='''
+import sys,time
+from pathlib import Path
+from aion_indian_market_calendar.windows_supervision import WindowsService
+from aion_indian_market_calendar.update_lifecycle import main
+original=WindowsService.call
+def hold(self,operation,**extra):
+ result=original(self,operation,**extra)
+ if operation=='install':
+  Path(sys.argv[1]).write_text('registered')
+  time.sleep(60)
+ return result
+WindowsService.call=hold
+del sys.argv[1]
+raise SystemExit(main())
+'''
+  args=[PY,'-c',code,marker,'setup','--root',partial,'--consent','--policy',POLICY,
+        '--bootstrap-manifest',APPROVAL,'--approved-sha256',HASH,'--wheelhouse',S,
+        '--service-directory',R/'partial task files']
+  with (R/'partial-setup.log').open('w',encoding='utf-8') as output:
+   process=subprocess.Popen(list(map(str,args)),env=env(True),stdout=output,stderr=subprocess.STDOUT)
+   try:
+    until(lambda:marker.exists() or process.poll() is not None)
+    assert marker.exists(),'Partial setup failed before native task registration'
+    intent=json.loads((partial/'SUPERVISOR.json').read_text())
+    assert intent['service'] and not intent['enabled']
+    process.kill();process.wait(timeout=10)
+   finally:
+    if process.poll() is None:process.kill();process.wait(timeout=10)
+  cli('uninstall','partial-intent-uninstall',root=partial)
+  cli('uninstall','partial-repeat-uninstall',root=partial)
+  assert not json.loads(cli('status','partial-final-status',root=partial).stdout)['supervision']['registered']
+  record('interrupted_setup_retains_owned_task_intent_and_idempotent_teardown')
  RESULT['bootstrap_artifact_manifest']=BOOT;RESULT['runtime_receipts']=receipts();RESULT['final_state']=state();RESULT['production_signing']='NOT_TESTED_EPHEMERAL_KEYS_ONLY'
 finally:
  RESULT['all_runtime_receipts']={}

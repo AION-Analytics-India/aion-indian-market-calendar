@@ -212,7 +212,7 @@ python -m aion_indian_market_calendar.update_lifecycle setup \
 python -m aion_indian_market_calendar.update_lifecycle status \
   --root /user-owned/calendar-managed
 python -m aion_indian_market_calendar.update_lifecycle run \
-  --root /user-owned/calendar-managed -- -m your_application
+  --root /user-owned/calendar-managed -- -I -c 'import importlib.metadata as m; print(m.version("aion-indian-market-calendar"))'
 python -m aion_indian_market_calendar.update_lifecycle stop \
   --root /user-owned/calendar-managed
 python -m aion_indian_market_calendar.update_lifecycle start \
@@ -255,3 +255,11 @@ The installed library and optional updater have separate platform gates.
 Python 3.9 is unsupported by metadata. Python 3.10-3.14 is the candidate library
 matrix; see RELEASE_STATUS.md for actual tested scope. No ordinary pip install
 registers an OS task. No automatic installation is production-approved yet.
+
+Matching setup repeats return actual status without changing consent or
+re-enabling disabled jobs. Changed/legacy roots require owner reconciliation.
+Notification-only mode records local availability; no email or desktop toast
+is implemented. Runtime patches do not replace the pinned updater controller,
+which needs a separate reviewed bootstrap. Arbitrary application dependencies
+are not copied into the managed runtime. The inline version command above is
+the tested application example; application integration is separately owned.

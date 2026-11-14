@@ -213,7 +213,7 @@ macOS registers an owned LaunchAgent with RunAtLoad and StartInterval. Linux
 registers an owned user service/timer with control-group termination, bounded
 startup duration, CPU quota and memory budget. A job name is a local hash of
 its dedicated root, not a network tracking identifier. Installation refuses
-existing files; changes/uninstall require the recorded file hashes. `status`
+existing unrelated files; changes/uninstall require the recorded file hashes. `status`
 reads actual OS state, including after an incomplete uninstall, rather than
 claiming success from a local state flag.
 
@@ -325,9 +325,11 @@ an owned root-hashed task using InteractiveToken/LeastPrivilege. Enrollment
 refuses service accounts and session 0; it never falls back to S4U, SYSTEM,
 stored passwords or elevation. Tasks start at logon and repeat while the user is
 signed in. Logged-out networking is not promised. Registration is create-only;
-existing tasks are never overwritten. Repeated setup of an existing root fails
-without mutation, rather than silently changing ownership or consent. Idempotent
-uninstall rechecks the provider and retains accepted environments/evidence.
+existing tasks are never overwritten. A matching setup contract returns actual
+status without mutation or re-enablement. Changed or legacy setup contracts
+refuse. Windows stores hash-owned registration intent before the provider call,
+so interrupted setup can be reconciled and uninstalled. Idempotent uninstall
+rechecks the provider and retains accepted environments/evidence.
 
 Windows controller identity is an owned CONTROLLER.json reference to an accepted
 bootstrap environment; no symlink privilege is needed. Reparse paths refuse.
@@ -343,3 +345,11 @@ scheduler lifecycle and Windows 11 reboot/logon. No macOS test certifies these.
 The test-only production signing identity is never inferred from fixture keys.
 The production root custodian/fingerprint, signed bootstrap onboarding and live
 channel are still owner decisions. Ordinary pip installation has no schedule.
+
+Availability notifications are local machine-readable receipts/output, not
+email, desktop toasts or push messages. Normal pip installs no schedule. The
+immutable supervisor/controller is not automatically replaced by runtime patch
+promotion; its security/code changes require a separate reviewed bootstrap.
+Managed run uses the fixed offline runtime environment; setting a library
+process offline does not unregister an independently opted-in OS job. Use the
+lifecycle offline command to persist offline policy and stop that schedule.

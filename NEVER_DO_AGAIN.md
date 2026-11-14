@@ -58,3 +58,13 @@ An accepted pointer can precede full operation completion. Use terminal receipts
 ## 2026-11-14T15:53:59.157672+00:00 | Native task XML gate
 
 An ElementTree-valid task can still be rejected by Task Scheduler. Validate through the native service before creating a disabled owned task; retain HRESULT and exact source identity. Do not interpret malformed XML as a reason to elevate, use SYSTEM or store a password.
+
+
+## 2026-11-14T16:05:58.344917+00:00 | Provider identity and NTFS contention
+
+Compare Windows credential/task ownership by resolved SID, never an unqualified display name. Known NTFS sharing/delete-pending failures may be retried only within fixed bounds and only for the operation own lock; persistent failures stay failures and no abandoned lock is stolen.
+
+
+## 2026-11-14T16:15:07.586953+00:00 | Durable enrollment ownership
+
+Persist exact owned mutation intent before an external provider operation. A configuration flag is not provider success. Repeat setup must not re-enroll, change consent or resume a disabled service. State explicitly that local availability receipts are not email/toast delivery and runtime patches do not self-update a pinned controller. Do not imply arbitrary application dependencies are present in a calendar-only runtime.

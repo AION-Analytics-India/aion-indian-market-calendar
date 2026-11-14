@@ -233,8 +233,6 @@ def setup(args) -> dict:
     print(json.dumps({'original_version': installed, 'original_environment': sys.prefix,
                       'managed_root': str(args.root), 'original_environment_will_be_changed': False,
                       'automatic_installation_requested': args.enable_auto_install}), flush=True)
-    if args.root.exists():
-        raise FileExistsError('Setup requires a new, dedicated managed root')
     pins = {name: metadata.version(name) for name in sorted(RUNTIME_DEPS)}
     constraints = []
     if args.constraints:
@@ -256,6 +254,18 @@ def setup(args) -> dict:
     offer = verify_approval(raw, args.approved_sha256, current_version='0.0.0')
     if offer.available != installed:
         raise ValueError('Bootstrap approval must match the installed candidate')
+    request={'policy':policy,'pins':pins,'constraints':constraints,'admission':admission_doc,
+             'bootstrap':args.approved_sha256,'original_version':installed,'original_environment':sys.prefix,
+             'automatic_installation':args.enable_auto_install,
+             'service_directory':str(args.service_directory.absolute()) if args.service_directory else None}
+    setup_contract=hashlib.sha256(json.dumps(request,sort_keys=True).encode()).hexdigest()
+    if args.root.exists():
+        existing=config(args.root)
+        if existing.get('setup_contract') != setup_contract:
+            raise FileExistsError('Managed root exists with a different or legacy setup contract; no mutation')
+        # Idempotent readback never resumes disabled/uninstalled supervision or
+        # changes consent. Recovery/start remains an explicit separate action.
+        return status(args.root)
     if policy.get('tls_ca_file'):
         ca = Path(policy['tls_ca_file']);private_file(ca);os.environ['SSL_CERT_FILE'] = str(ca)
     if os.environ.get('AION_IN_CALENDAR_OFFLINE', '').lower() in ('1', 'true', 'yes'):
@@ -267,7 +277,8 @@ def setup(args) -> dict:
     cfg = {'schema_version': 1, 'root': str(args.root), 'policy': policy, 'dependency_pins': pins,
            'constraints': constraints, 'enabled': False, 'automatic_installation': args.enable_auto_install,
            'offline': False, 'original_version': installed, 'original_environment': sys.prefix,
-           'admission': admission_doc, 'created_at': time.time(), 'uninstalled': False}
+           'admission': admission_doc, 'created_at': time.time(), 'uninstalled': False,
+           'setup_contract':setup_contract}
     if os.name == 'nt':
         from .windows_runtime import create_private_directory
         create_private_directory(args.root)

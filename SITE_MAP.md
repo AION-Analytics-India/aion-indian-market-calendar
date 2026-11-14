@@ -191,3 +191,20 @@ Native module boundary: system PowerShell Utility is an explicit dependency; pro
 Terminal proof refinement: CURRENT promotion alone is not operation completion; acceptance waits for a supervisor upgraded receipt after lease release. Native failure diagnostics are limited to phase/HRESULT codes. No security boundary was relaxed.
 
 Task XML gate: Windows scheduler validates the exact task before create-only registration. No encoding declaration is sent on Unicode COM transport. Native lifecycle matrix now explicitly includes Windows Python 3.10-3.14, separately from macOS/Linux and real reboot acceptance.
+
+Provider identity proof uses current-SID equality after resolving the task principal, not text aliases. CAL-STORE treats documented NTFS sharing/delete-pending states as bounded contention without stale-lock theft or permission changes. Native boundary regression tests retain the original concurrent refresh contract.
+
+Windows enrollment intent is persisted in the owning SUPERVISOR.json before the
+provider mutation; fields identify the exact task definition/hash and remain
+disabled until verified activation. Matching setup uses a request fingerprint
+for idempotent readback, never silent re-enablement. No database is introduced.
+
+```mermaid
+flowchart LR
+  Consent[Explicit consent and verified bootstrap] --> Intent[Owned durable registration intent]
+  Intent --> Create[Create disabled native task]
+  Create --> Verify[Owner SID and action readback]
+  Verify --> Enable[Explicit schedule activation]
+  Intent --> Crash[Interrupted setup]
+  Crash --> Reconcile[Owned provider readback and uninstall]
+```

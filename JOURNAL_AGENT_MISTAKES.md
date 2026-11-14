@@ -61,3 +61,13 @@ The scheduler harness treated a promoted CURRENT pointer as terminal completion.
 ## 2026-11-14T15:53:59.157672+00:00 | Native task XML gate
 
 Portable XML parsing did not prove Task Scheduler acceptance. Native service rejected the serialized task as malformed. Added native validate-only before registration and removed byte encoding from the Unicode COM transport; native execution must confirm this correction. No privilege, principal, security descriptor or consent rule changed.
+
+
+## 2026-11-14T16:05:58.344917+00:00 | Provider identity and NTFS contention
+
+Exact serialized-principal text is not an account ownership invariant: the native service may normalize SID to account name. Resolve to SID before comparison; never accept a short-name match. A Windows refresh race surfaced after other platform runs passed; FileExistsError alone did not cover native delete-pending errors. Added bounded native-error retries and deterministic boundary regressions, without widening permissions or changing the original concurrency fixture.
+
+
+## 2026-11-14T16:15:07.586953+00:00 | Durable enrollment ownership
+
+Failed native registration exposed an incomplete setup checkpoint: task intent was written only after provider success, so ambiguous creation could not be reconciled through normal teardown. Moved durable intent before mutation and added an actual native kill/recovery test. Historical failures remain retained. No task ownership check was bypassed. Earlier -m your_application quick-start presupposed an application/dependency installation not provided by the calendar-only runtime; replaced with the actual tested inline version command.

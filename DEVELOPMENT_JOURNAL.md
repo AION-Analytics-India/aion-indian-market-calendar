@@ -80,3 +80,13 @@ Native Windows package artifacts now pass Python 3.10-3.14, including independen
 ## 2026-11-14T15:53:59.157672+00:00 | Native task XML gate
 
 Native registration diagnostic confirmed SCHED_E_MALFORMEDXML (0x8004131A), not a request for broader permissions. Omit the byte-encoding declaration from Unicode COM task XML and require TASK_VALIDATE_ONLY before create-only registration. Keep InteractiveToken, least privilege, no passwords and ownership checks. Extend actual Windows scheduler lifecycle matrix to Python 3.10-3.14; macOS/Linux native lifecycle remains separately tested. No release activation.
+
+
+## 2026-11-14T16:05:58.344917+00:00 | Provider identity and NTFS contention
+
+Native task XML now validates and registers, but the provider returns principal names as well as SIDs. Ownership verification resolves the provider principal to its actual SID and compares with the current authorized SID; no short-name trust or permission expansion. Added per-invariant failure phases. A native Windows Python3.10 data-refresh contention failure returned access-denied for a transient NTFS delete-pending lock. Existing five-second bounds now retry only documented sharing/delete-pending native error codes while never stealing a stale lock; original concurrent assertions remain unchanged.
+
+
+## 2026-11-14T16:15:07.586953+00:00 | Durable enrollment ownership
+
+Persist Windows task registration intent before provider mutation so a killed setup retains an exact owned task record. Treat only SCHED_E_TASK_NOT_RUNNING as idempotent stop and still require provider readback. Matching setup contracts return actual status without mutation or automatic re-enablement; changed/legacy contracts refuse. Native driver now kills a setup after real disabled-task creation and verifies two uninstalls. Documentation clarifies local notices, pinned controller ownership and managed offline runtime; no universal auto-upgrade claim.

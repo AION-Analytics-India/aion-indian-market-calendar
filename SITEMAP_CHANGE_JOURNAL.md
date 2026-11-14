@@ -82,3 +82,13 @@ CAL-OS-LIFECYCLE joins CURRENT version to the terminal upgraded supervisor recei
 ## 2026-11-14T15:53:59.157672+00:00 | Native task XML gate
 
 CAL-WINDOWS-ADAPTER adds native task XML validation before create-only registration; serialization omits byte encoding for Unicode COM transport. CAL-OS-LIFECYCLE covers all five declared Windows Python versions in isolated CI. No new privilege or production service.
+
+
+## 2026-11-14T16:05:58.344917+00:00 | Provider identity and NTFS contention
+
+CAL-WINDOWS-ADAPTER reconciles provider principal representation using resolved SID equality and per-invariant diagnostics. CAL-STORE bounds retries for NTFS sharing/delete-pending lock operations. No ownership, approval, storage or release boundary changed.
+
+
+## 2026-11-14T16:15:07.586953+00:00 | Durable enrollment ownership
+
+CAL-LIFECYCLE adds a local setup-contract fingerprint and idempotent actual-state readback. CAL-WINDOWS-ADAPTER persists service intent before registering a disabled task, with native kill/uninstall regression. Explicit no-network notification and immutable controller boundaries are clarified. No new production service, database or permission boundary.
