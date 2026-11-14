@@ -76,10 +76,10 @@ def verify(args) -> dict:
             'python':sys.version,'inventory':doc,'runs':[], 'production_systems_used':False,
             'excluded_modules':list(POSIX_UPDATE_MODULES) if args.scope=='library' else [],
             'exclusion_reason':'Platform lifecycle tests separated from library correctness; not a universal updater claim' if args.scope=='library' else None}
-    parent={k:os.environ[k] for k in ('PATH','SYSTEMROOT','WINDIR') if k in os.environ}
+    parent={k:os.environ[k] for k in ('PATH','SYSTEMROOT','WINDIR','USERPROFILE','LOCALAPPDATA','APPDATA','SYSTEMDRIVE','COMSPEC','PATHEXT') if k in os.environ}
     with tempfile.TemporaryDirectory(prefix='calendar-artifacts-',dir=output) as temporary:
         root=Path(temporary);(root/'tmp').mkdir()
-        environment={**parent,'HOME':str(root),'TEMP':str(root/'tmp'),'TMP':str(root/'tmp'),'TMPDIR':str(root/'tmp'),
+        environment={**parent,'PYTHONUTF8':'1','HOME':str(root),'TEMP':str(root/'tmp'),'TMP':str(root/'tmp'),'TMPDIR':str(root/'tmp'),
                      'AION_IN_CALENDAR_OFFLINE':'1','AION_IN_CALENDAR_CACHE':str(root/'calendar-cache'),
                      'PIP_CONFIG_FILE':os.devnull,'PIP_DISABLE_PIP_VERSION_CHECK':'1','PIP_NO_CACHE_DIR':'1'}
         source=extract_source(next(directory.glob('*.tar.gz')),root/'source')

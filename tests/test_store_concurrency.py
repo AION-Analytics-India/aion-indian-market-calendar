@@ -146,6 +146,29 @@ def test_a_slow_refresher_never_switches_back_to_an_older_dataset(env, monkeypat
     assert store.status()["dataset_version"] == "2026.11.03"
 
 
+@pytest.mark.parametrize('peer_completes', [True, False])
+def test_adoption_timeout_reconciles_only_verified_peer_completion(env, monkeypatch, peer_completes):
+    from contextlib import contextmanager
+    monkeypatch.setattr(store, '_fetch', _serving(NEW_DIR))
+    @contextmanager
+    def contending_owner():
+        if peer_completes:
+            # A different writer has already installed a complete hash-verified
+            # flat generation, but still owns its independent adoption lock.
+            for p in NEW_DIR.iterdir():
+                (store.CACHE_DIR/p.name).write_bytes(p.read_bytes())
+        raise TimeoutError('another data adopter owns the cache lock')
+        yield
+    monkeypatch.setattr(store, '_adoption_lock', contending_owner)
+    result = store.refresh(force=True)
+    if peer_completes:
+        assert result == 'already current'
+        assert store._verify(store.CACHE_DIR) == (True, 'ok')
+    else:
+        assert not store.refresh_succeeded(result)
+        assert 'another data adopter' in result
+
+
 class _Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass

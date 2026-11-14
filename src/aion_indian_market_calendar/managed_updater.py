@@ -132,7 +132,7 @@ class ManagedUpdater:
 
     def _env(self, candidate: Path) -> dict:
         # Do not inherit credentials, proxies, PYTHONPATH, live cache or pip config.
-        env = {k: os.environ[k] for k in ("PATH", "SYSTEMROOT", "WINDIR", "TMPDIR") if k in os.environ}
+        env = {k: os.environ[k] for k in ("PATH", "SYSTEMROOT", "WINDIR", "TMPDIR", "USERPROFILE", "LOCALAPPDATA", "APPDATA", "SYSTEMDRIVE", "COMSPEC", "PATHEXT") if k in os.environ}
         env.update(AION_IN_CALENDAR_OFFLINE="1", AION_IN_CALENDAR_CACHE=str(candidate / "calendar-cache"),
                    PIP_CONFIG_FILE=os.devnull, PIP_NO_INDEX="1", PIP_DISABLE_PIP_VERSION_CHECK="1", PYTHONNOUSERSITE="1")
         if os.name == 'nt':

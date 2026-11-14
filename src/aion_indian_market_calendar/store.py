@@ -574,6 +574,18 @@ def refresh(force: bool = False) -> str:
         if _state["loaded"]:
             _reload()                       # this process sees it at once
         return result
+    except TimeoutError as exc:
+        # Another writer can finish adoption while a contending refresher is
+        # waiting. Report completion only after independently verifying the
+        # selected dataset; never steal a lock or assume success from a marker.
+        current = _select()
+        if current is not None and _version_key(current[2]) >= remote_key:
+            _mark_checked()
+            if _state['loaded']:
+                _reload()
+            return _record('already current')
+        _warn_once('nocache', 'Calendar adoption remained blocked: %s; keeping verified data.', exc)
+        return _record(f'could not write cache: {exc}')
     except OSError as exc:
         # Loud, not debug. A cache that cannot be written means auto-update is
         # off, and an update that is silently off is the thing this module was
@@ -607,9 +619,8 @@ def _reload() -> None:
         break
     if chosen is None:
         _warn_once("ruleonly",
-                   "No verified holiday data; running in RULE-ONLY mode. Weekends "
-                   "still apply, but exchange holidays, special sessions and "
-                   "half-days are unknown.")
+                   "No verified holiday data; calendar coverage is unavailable. "
+                   "Session/date consumers must refuse unknown answers.")
         label, directory, manifest, data = "rule-only", None, {}, {}
     identity = (label, str(directory), _version_key(manifest), manifest.get("dataset_version"),
                 json.dumps(manifest.get("files") or {}, sort_keys=True))
@@ -628,9 +639,9 @@ def load(auto_refresh: bool = True) -> dict[int, dict[str, Any]]:
     due (backing off after a failure) and re-reads when the verified data on
     disk has changed, including when another process refreshed it.
 
-    Falls back to rule-only mode -- an empty dataset -- if nothing verifies. The
-    caller then still has weekends and computed public holidays, which is the
-    part that cannot go stale.
+    Returns an empty unavailable dataset if nothing verifies. The legacy
+    rule_only status label is retained for compatibility; calendar consumers
+    must refuse unknown date/session answers, not assume weekday coverage.
     """
     now = _time.monotonic()
     if _state["loaded"]:

@@ -31,12 +31,12 @@ def powershell(script: str, data: dict) -> dict:
 $ErrorActionPreference='Stop'
 [Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)
-$d=[Console]::In.ReadToEnd() | ConvertFrom-Json
+$d=[Console]::In.ReadLine() | ConvertFrom-Json
 '''
     encoded=base64.b64encode((prefix+script).encode('utf-16-le')).decode('ascii')
     exe=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'
     result=subprocess.run([str(exe),'-NoLogo','-NoProfile','-NonInteractive','-EncodedCommand',encoded],
-                          input=json.dumps(data,ensure_ascii=True),capture_output=True,text=True,
+                          input=json.dumps(data,ensure_ascii=True)+"\n",capture_output=True,text=True,
                           encoding='utf-8',timeout=30)
     if result.returncode:
         raise PermissionError('Native Windows operation failed; no policy was weakened')
@@ -130,6 +130,9 @@ def open_guard(path: Path, *, shared: bool=False) -> int:
 
 def run_child(args, *, lease_fds=(), timeout=None, check=False, **kwargs):
     native();import msvcrt
+    if kwargs.pop("capture_output", False):
+        if "stdout" in kwargs or "stderr" in kwargs:raise ValueError("capture_output conflicts with explicit streams")
+        kwargs.update(stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     handles=[msvcrt.get_osfhandle(fd) for fd in lease_fds]
     # Only the construction window marks handles inheritable. No global
     # close_fds=False or unbounded ambient-handle inheritance is permitted.

@@ -28,3 +28,8 @@ When validating an sdist, retain its full packaged fixture/source-inspection con
 ## 2026-11-14T15:13:47.699043+00:00 | Three-platform review candidate
 
 Never use a historical Windows build, a Windows tag, XML serialization or a Mac mock as proof of native candidate acceptance. Record actual source/artifact identity and native provider readback. Never claim scheduled automatic installation from a manual updater command. Do not request or use SYSTEM/S4U, stored passwords or elevated fallback to make user-scoped Windows scheduling pass. A native runner capability failure is a blocker, not permission expansion. Never install an unpublished version from PyPI in documentation. Separate library correctness, managed lifecycle, real reboot and production signing/distribution approvals. Always state CDS INR hours and currency-holiday scope separately from equity phases.
+
+
+## 2026-11-14T15:23:13.451890+00:00 | Native CI corrections
+
+Verify hosted runner labels against current official availability before submission. Never repair flaky adoption tests by skipping or widening their assertions: reconcile only a complete hash-verified current generation. A stale lock must still fail when the new generation is absent. Native subprocess adapters must define run/Popen argument translation and inherited-handle behavior explicitly.

@@ -52,3 +52,8 @@ Clarified low-level watcher versus explicit customer supervision. Added offline 
 ## 2026-11-14T15:13:47.699043+00:00 | Three-platform review candidate
 
 Added source-only CAL-WINDOWS-ADAPTER, artifact verification workflow/helper, preserved independent probe and Windows ephemeral TLS test boundary. Updated the shared lifecycle graph and current status/doc artifacts. Worker/task/ACL/lease proof remains pending native CI; portable tests are explicitly scoped. No SQLite/PostgreSQL/Redis/ClickHouse, inference, trading, website or billing edge added. No production deployment or trusted release authority created.
+
+
+## 2026-11-14T15:23:13.451890+00:00 | Native CI corrections
+
+CAL-STORE adoption outcome now revalidates current data after bounded lock contention; no lock stealing, schema change or unverified adoption. CAL-WINDOWS-ADAPTER gains explicit capture_output translation and bounded stdin. Windows OS profile variables are a non-secret native process dependency. CAL-CI uses supported macos-15. Diagrams remain structurally valid; this changes proof/failure handling, not public API or storage topology.

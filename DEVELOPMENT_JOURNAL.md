@@ -50,3 +50,8 @@ Final runtime wheel passed 15 native lifecycle cases each on macOS launchd and L
 ## 2026-11-14T15:13:47.699043+00:00 | Three-platform review candidate
 
 Added staged native Windows Task Scheduler/WinAPI adapters to the existing managed lifecycle, with no alternate signing or promotion implementation. Added native artifact CI and portable lifecycle driver with in-memory Windows TLS fixtures. Focused macOS changed-code tests passed 68 with no skips. Native CI is explicitly owner-authorized but pending execution. Current docs now use RELEASE_STATUS.md, preserve historical results and show separate calendar/updater/Windows 11/trust gates. CDS documentation explicitly covers NSE INR pairs 09:00-17:00 IST and currency holidays. Mapped CAL-WINDOWS-ADAPTER, CAL-CI-ARTIFACTS, CAL-OS-LIFECYCLE and test TLS boundaries. No calendar calculations/data, production or public default branch changed.
+
+
+## 2026-11-14T15:23:13.451890+00:00 | Native CI corrections
+
+Native verification branch was explicitly authorized and submitted. First CI source tree matched local source byte-for-byte. Linux actual scheduled lifecycle passed. Native artifact tests exposed a real concurrent-refresh outcome race plus Windows adapter/fixture defects. Retained every failure and unchanged acceptance assertion. Reconcile adoption timeout only by verified equal/newer data, fix native child capture semantics, bound PowerShell JSON to one line and supply required Windows OS profile variables. Add real native locked-pointer and process-tree tests. Replace retired macos-14 label with officially supported macos-15.

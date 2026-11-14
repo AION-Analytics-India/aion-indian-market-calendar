@@ -179,3 +179,5 @@ Its CONTROLLER.json references an immutable accepted bootstrap directory. The
 original pip environment remains unchanged. No database, Redis, billing,
 production endpoint or trading dependency is added. Native failures block the
 corresponding gate. No Windows 11 real reboot is inferred from hosted CI.
+
+Native CI correction: CAL-STORE bounded adoption waits now reconcile a peer-completed verified generation before reporting failure. No stale lock is stolen. Native Windows profile/stdin/capture semantics and kernel pointer/tree checks are part of CAL-WINDOWS-ADAPTER. macOS verification uses supported macos-15, replacing a retired label. Current-run outcomes remain evidence-dependent.

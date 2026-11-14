@@ -15,7 +15,7 @@ SCRIPT = r'''
 $ErrorActionPreference='Stop'
 [Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)
-$d=[Console]::In.ReadToEnd() | ConvertFrom-Json
+$d=[Console]::In.ReadLine() | ConvertFrom-Json
 Add-Type -TypeDefinition @'
 using System;
 using System.IO;
@@ -77,7 +77,7 @@ class FixtureServer:
         encoded=base64.b64encode(SCRIPT.encode('utf-16-le')).decode('ascii')
         self.process=subprocess.Popen([str(exe),'-NoLogo','-NoProfile','-NonInteractive','-EncodedCommand',encoded],
                                       stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        self.process.stdin.write(json.dumps({'root':str(root),'pfx':base64.b64encode(pfx).decode()}).encode())
+        self.process.stdin.write(json.dumps({'root':str(root),'pfx':base64.b64encode(pfx).decode()}).encode()+b'\n')
         self.process.stdin.close();del pfx
         self.port=None;ready=threading.Event()
         def read():

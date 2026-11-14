@@ -26,13 +26,13 @@ def save(): (R/'RESULTS.json').write_text(json.dumps(RESULT,indent=2)+'\n')
 def record(name,**evidence):
  RESULT['cases'].append({'case':name,'result':'PASS',**evidence});save();print(name+': PASS',flush=True)
 def env(online=False):
- e={k:os.environ[k] for k in ['PATH','SYSTEMROOT','WINDIR','DBUS_SESSION_BUS_ADDRESS','XDG_RUNTIME_DIR'] if k in os.environ}
- e.update(TEMP=str(R/'tmp'),TMP=str(R/'tmp'),TMPDIR=str(R/'tmp'),AION_IN_CALENDAR_OFFLINE='0' if online else '1',AION_IN_CALENDAR_CACHE=str(R/'cache'),PIP_CONFIG_FILE=os.devnull,PIP_NO_INDEX='1',PIP_DISABLE_PIP_VERSION_CHECK='1',PIP_NO_CACHE_DIR='1',PYTHONDONTWRITEBYTECODE='1')
+ e={k:os.environ[k] for k in ['PATH','SYSTEMROOT','WINDIR','USERPROFILE','LOCALAPPDATA','APPDATA','SYSTEMDRIVE','COMSPEC','PATHEXT','DBUS_SESSION_BUS_ADDRESS','XDG_RUNTIME_DIR'] if k in os.environ}
+ e.update(PYTHONUTF8='1',TEMP=str(R/'tmp'),TMP=str(R/'tmp'),TMPDIR=str(R/'tmp'),AION_IN_CALENDAR_OFFLINE='0' if online else '1',AION_IN_CALENDAR_CACHE=str(R/'cache'),PIP_CONFIG_FILE=os.devnull,PIP_NO_INDEX='1',PIP_DISABLE_PIP_VERSION_CHECK='1',PIP_NO_CACHE_DIR='1',PYTHONDONTWRITEBYTECODE='1')
  if (R/'test-ca.pem').exists():e['SSL_CERT_FILE']=str(R/'test-ca.pem')
  return e
 def run(args,tag,expected=0,online=False,timeout=240):
  p=subprocess.run(list(map(str,args)),cwd=R,env=env(online),capture_output=True,text=True,timeout=timeout)
- (R/(tag+'.log')).write_text(p.stdout+p.stderr);RESULT['commands'].append({'case':tag,'argv':list(map(str,args)),'exit':p.returncode});save()
+ (R/(tag+'.log')).write_text(p.stdout+p.stderr,encoding='utf-8');RESULT['commands'].append({'case':tag,'argv':list(map(str,args)),'exit':p.returncode});save()
  if expected is not None:assert p.returncode==expected,(tag,p.returncode,(p.stdout+p.stderr)[-1800:])
  return p
 if os.name=='nt':
