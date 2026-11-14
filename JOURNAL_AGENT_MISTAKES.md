@@ -96,3 +96,8 @@ Earlier current CHANGELOG text still called Windows native acceptance untested a
 ## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
 
 Initial final-artifact freeze occurred before checking AGENTS release policy and tutorial current-state claims. Those two obsolete instructions were found in final review. Corrected and rebuilt; never reuse the preceding hashes or hide that superseded candidate. Do not infer missing files from a chained-command failure.
+
+
+## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
+
+Earlier Windows boundary tests synthesized winerror5/32/33 but missed CRT errno-only EACCES. The real native test failed correctly; do not retry it away or relax assertions. Added platform-specific predicate and persistent-denial regressions, retained the failing receipt. A browser glyph resembled an en dash; actual rendered codepoints proved ASCII U+002D, so no unnecessary website source rewrite was made.

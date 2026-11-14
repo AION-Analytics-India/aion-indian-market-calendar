@@ -6,17 +6,8 @@ both -- and the payload is not, because an Indian entry carries an id, a policy,
 an impact level and a time range that callers act on. Flattening that into date
 lists would have destroyed information users already depend on.
 
-Why this replaces what was here
--------------------------------
-The previous mechanism pointed at ``api.aiondashboard.site/v1/calendar/live``,
-which returns 404, fed by a launchd poller that stopped running on 2026-07-05.
-``refresh_url`` also defaulted to ``None``, so it was opt-in and off. The holiday
-data in this package therefore had no path to update at all.
-
-More seriously, that refresh had no integrity check. On 2026-06-26 it wrote a
-105-byte delta over a 117 KB calibrated taxonomy file and wiped a production
-sector engine. The guard added at the time checked a size floor and four required
-keys, which stops that exact payload and nothing else.
+Earlier update-path history is retained in Git and docs/TELEMETRY_AUDIT.md.
+The active calendar-data store does not load or modify another AION product.
 
 This one verifies a SHA-256 per file against a SHA-256 manifest fetched over HTTPS, downloads to a
 staging directory, and only swaps once **every** file verifies. A single mismatch
@@ -52,6 +43,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import hashlib
+import errno
 import json
 import logging
 import os
@@ -456,6 +448,23 @@ def _adopt(staging: Path, manifest: dict[str, Any], raw_manifest: bytes) -> Path
     return target
 
 
+def _lock_contention(error: OSError, *, windows: bool | None = None) -> bool:
+    """Only retry bounded lock contention; never grant access or steal a lock.
+
+    Windows CRT _wopen reports sharing denial as errno EACCES without a
+    winerror attribute. The same errno on POSIX remains an immediate refusal.
+    A persistent Windows permission denial still expires at the same deadline.
+    """
+    if isinstance(error, FileExistsError):
+        return True
+    native = getattr(error, 'winerror', None)
+    if native in (5, 32, 33):
+        return True
+    if windows is None:
+        windows = os.name == 'nt'
+    return windows and native is None and error.errno == errno.EACCES
+
+
 @contextmanager
 def _adoption_lock():
     """Serialize the version check and pointer switch across processes.
@@ -473,7 +482,7 @@ def _adoption_lock():
             # NTFS can report a delete-pending/sharing state as access denied
             # instead of EEXIST. Retry only known native contention errors;
             # never steal the marker or weaken directory permissions.
-            if not isinstance(exc, FileExistsError) and getattr(exc, 'winerror', None) not in (5, 32, 33):
+            if not _lock_contention(exc):
                 raise
             if _time.monotonic() >= deadline:
                 raise TimeoutError("another data adopter owns the cache lock")
@@ -489,7 +498,7 @@ def _adoption_lock():
                 lock.unlink()
                 break
             except OSError as exc:
-                if getattr(exc, 'winerror', None) not in (5, 32, 33) or _time.monotonic() >= deadline:
+                if not _lock_contention(exc) or _time.monotonic() >= deadline:
                     raise
                 _time.sleep(0.01)
 

@@ -93,3 +93,8 @@ Never publish pre-README-change artifacts after metadata changes. Build once, bi
 ## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
 
 Before artifact freeze, scan active contributor rules, tutorials and examples as well as README/CHANGELOG. Any subsequent packaged documentation change requires rebuilding and reaccepting exact artifacts. Keep tests and production managed-update activation separate.
+
+
+## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
+
+Test actual OS error shapes as well as documented native codes. CPython CRT wrappers may omit winerror. Permission retries must be platform-specific, bounded by existing policy and never alter permissions/steal a lock. Preserve a real failed native run and rerun exact final artifacts; never count prior all-green results as proof after a source change.

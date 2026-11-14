@@ -250,3 +250,31 @@ def test_concurrent_processes_share_one_cache_safely(env):
     assert store._verify(cache / "datasets" / pointer) == (True, "ok")
     assert store._verify(cache) == (True, "ok")                      # flat copy for older versions
     assert not list(cache.glob(".staging-*")) and not list(cache.glob(".*.tmp"))
+
+
+@pytest.mark.parametrize('windows,code,expected', [
+    (True, 13, True), (False, 13, False),
+    (True, 5, False), (False, 5, False),
+    (True, 2, False), (False, 2, False),
+])
+def test_crt_errno_without_winerror_is_platform_bounded(windows, code, expected):
+    error = OSError(code, 'Synthetic CRT boundary')
+    assert getattr(error, 'winerror', None) is None
+    assert store._lock_contention(error, windows=windows) is expected
+
+
+def test_posix_permission_denial_is_not_hidden_by_lock_retries(env, monkeypatch):
+    if os.name == 'nt':
+        # The platform-bound predicate above proves POSIX refusal. On Windows,
+        # verify persistent CRT refusal expires without lock creation/theft.
+        ticks=iter([0.0, 5.1]); monkeypatch.setattr(store._time, 'monotonic', lambda:next(ticks))
+    original=os.open
+    def denied(path, flags, *args, **kwargs):
+        if Path(path)==store.CACHE_DIR/'.adoption.lock':
+            raise PermissionError(13, 'Synthetic persistent denial')
+        return original(path, flags, *args, **kwargs)
+    monkeypatch.setattr(os, 'open', denied)
+    expected=TimeoutError if os.name=='nt' else PermissionError
+    with pytest.raises(expected):
+        with store._adoption_lock():raise AssertionError('Denied lock was acquired')
+    assert not (store.CACHE_DIR/'.adoption.lock').exists()

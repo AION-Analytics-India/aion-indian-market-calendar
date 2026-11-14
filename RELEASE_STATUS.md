@@ -22,7 +22,9 @@ Its exact23-job evidence and historical artifact hashes remain attached to that
 source, not falsely attributed to a later build. The final release manifest
 records new accepted hashes after the final source is frozen. Current-code
 changes since that run are public copy, packaging and publishing gates; calendar
-engine/data and managed-updater behavior are unchanged.
+engine/data and managed-updater behavior are unchanged except the bounded Windows
+CRT sharing-denial mapping in calendar-data lock acquisition. A final native
+reproduction and deterministic refusal tests are required for that correction.
 
 The publication preflight checks actual accepted artifact identity, packaged
 README/license/code/data agreement, required native jobs, current ref/source,

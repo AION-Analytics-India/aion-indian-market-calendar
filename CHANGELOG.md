@@ -9,7 +9,9 @@ This source heading is not publication proof. [Dated correction and apology](doc
 - Keep December7 closing-auction/derivatives rules effective-dated and preserve
   explicit contract/data-horizon limits. Indian2027data remains unsupported.
 - Include complete wheel/sdist acceptance and immutable test fixtures.
-- Repair concurrent refresh accounting and native NTFS lock-contention handling.
+- Repair concurrent refresh accounting and native NTFS/CRT lock contention,
+  including Windows errno-only EACCES; retain the existing bounded timeout,
+  permission refusal and no-lock-theft behavior.
 - Retain the experimental managed updater; production automatic installation
   is not activated on any OS and Windows updater rollout is paused.
 - Use a manual exact-artifact publication gate; no tag-triggered duplicate upload,

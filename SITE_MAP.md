@@ -262,3 +262,8 @@ commit; a merge commit changing that identity requires fresh acceptance.
 ## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
 
 Final source-consistency follow-up updates contributor manual-release policy and tutorial bootstrap instructions. CAL-RELEASE/CAL-DOCS/examples remain same components and runtime graph. Rebuild final artifacts after these package-document changes; earlier hashes remain historical.
+
+
+## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
+
+CAL-STORE now recognizes Windows CRT errno-only EACCES as bounded sharing/permission contention, per CPython _wopen/SetFromErrno and Microsoft CRT documentation. No POSIX broadening, stale-lock theft, permissions change or changed deadline. Existing concurrency assertion remains mandatory; deterministic persistent-denial tests added. Calendar rule/data and managed-update graph unchanged.

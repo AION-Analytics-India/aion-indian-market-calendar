@@ -117,3 +117,8 @@ Added CAL-PUBLICATION-GATE/CAL-PUBLISHER-IDENTITY/CAL-ADVISORY, diagram and exac
 ## 2026-11-14T17:10:35.695301+00:00 | Final source consistency
 
 Proof/documentation-only follow-up for CAL-RELEASE/CAL-DOCS. No runtime/dependency edge changed. Existing graph remains accurate; source freeze and hash evidence must advance for packaged prose.
+
+
+## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
+
+CAL-STORE native error boundary corrected without changing store topology, rule/session calculations or deployment. Updated platform/error proof and required regression coverage. Retired unrelated implementation anecdote removed from active public module documentation; Git history retained. No proprietary model code or production store accessed.
