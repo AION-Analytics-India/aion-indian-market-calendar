@@ -38,3 +38,8 @@ Verify hosted runner labels against current official availability before submiss
 ## 2026-11-14T15:31:39.216747+00:00 | Native acceptance round three
 
 A bound TLS port is not a verified authenticated handshake. Exercise a valid CA and invalid CA before relying on a fixture. Resolve new test dependencies jointly with existing package ranges. Avoid account-name lookup in a native ACL validator when SID-valued access rules are available. Do not read a pointer using a second handle while the test intentionally denies sharing. A refused older data version must not renew the accepted-data freshness marker.
+
+
+## 2026-11-14T15:38:16.653807+00:00 | Scheduler acceptance closure
+
+Do not claim an attempted scheduled install is failed or successful without its terminal state. Bound asynchronous observation against scheduler and worker budgets, record actual elapsed time and preserve timed-out evidence. Never upload disposable environments merely to preserve a few receipts. Native invocation metadata must be explicitly constrained and must never contain credentials or signing keys.

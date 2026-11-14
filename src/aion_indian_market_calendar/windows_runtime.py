@@ -27,17 +27,23 @@ def native():
 
 def powershell(script: str, data: dict) -> dict:
     native()
+    # This adapter carries only local task/path metadata, never credentials or
+    # key material. Avoid Console.In semantics under redirected/native runners.
+    if set(data) - {'path','label','root','python','arguments','operation','xml'}:
+        raise ValueError('Unsupported native metadata field')
+    payload=base64.b64encode(json.dumps(data,ensure_ascii=True).encode()).decode('ascii')
     prefix='''
 $ErrorActionPreference='Stop'
-[Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)
-$d=[Console]::In.ReadLine() | ConvertFrom-Json
-'''
+''' + "$d=[System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('"+payload+"')) | ConvertFrom-Json\n"
     encoded=base64.b64encode((prefix+script).encode('utf-16-le')).decode('ascii')
     exe=Path(os.environ['SYSTEMROOT'])/'System32/WindowsPowerShell/v1.0/powershell.exe'
-    result=subprocess.run([str(exe),'-NoLogo','-NoProfile','-NonInteractive','-EncodedCommand',encoded],
-                          input=json.dumps(data,ensure_ascii=True)+"\n",capture_output=True,text=True,
-                          encoding='utf-8',timeout=30)
+    try:
+        result=subprocess.run([str(exe),'-NoLogo','-NoProfile','-NonInteractive','-EncodedCommand',encoded],
+                              stdin=subprocess.DEVNULL,capture_output=True,text=True,
+                              encoding='utf-8',timeout=30)
+    except subprocess.TimeoutExpired:
+        raise TimeoutError('Native Windows operation timed out; no policy was weakened') from None
     if result.returncode:
         raise PermissionError('Native Windows operation failed; no policy was weakened')
     return json.loads(result.stdout.lstrip('\ufeff').strip())

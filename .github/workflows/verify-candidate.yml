@@ -92,7 +92,9 @@ jobs:
         if: always()
         with:
           name: lifecycle-${{ matrix.os }}
-          path: lifecycle-evidence/
+          path: |
+            lifecycle-evidence/*.json
+            lifecycle-evidence/*.log
           retention-days: 14
 
 # No id-token, publishing, production signing credentials or production tests.

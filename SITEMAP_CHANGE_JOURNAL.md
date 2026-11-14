@@ -62,3 +62,8 @@ CAL-STORE adoption outcome now revalidates current data after bounded lock conte
 ## 2026-11-14T15:31:39.216747+00:00 | Native acceptance round three
 
 CAL-WINDOWS-TLS-FIXTURE now uses in-memory OpenSSL with a Windows-only test extra, replacing the nonfunctional SslStream path. No production dependency added. CAL-STORE rejects an older manifest without freshness mutation. CAL-WINDOWS-ADAPTER ACL validation uses SID-valued rules, avoiding identity translation. Source diagrams remain valid; proof and test dependency boundaries updated.
+
+
+## 2026-11-14T15:38:16.653807+00:00 | Scheduler acceptance closure
+
+CAL-WINDOWS-ADAPTER uses encoded allowlisted local metadata instead of redirected console reads; there are no credential fields. Test evidence upload excludes managed environments. Native test observation window reflects scheduler/worker timing without changing update or market behavior. Map structure unchanged.

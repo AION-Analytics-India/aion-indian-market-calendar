@@ -51,8 +51,9 @@ def task_xml(root: Path, label: str, python: Path, sid: str, seconds: int) -> by
     return ET.tostring(tree, encoding='utf-8', xml_declaration=True)
 
 
-# The script is fixed source. User/path data travels on JSON stdin, never in
-# interpolated shell text. Every mutation rechecks ownership and exact action.
+# The script is fixed source. JSON metadata is encoded as data, never evaluated
+# as shell text; no credential fields are accepted. Every mutation rechecks
+# ownership and exact action.
 CONTROL = win.IDENTITY + r'''
 $svc=New-Object -ComObject 'Schedule.Service';$svc.Connect();$folder=$svc.GetFolder('\')
 $task=$null

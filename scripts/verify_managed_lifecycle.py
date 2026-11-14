@@ -114,7 +114,7 @@ def cli(operation,tag,*extra,root=MANAGED,expected=0):return run([PY,'-m','aion_
 def state():return json.loads((MANAGED/'runtime/CURRENT.json').read_text())
 def receipts():
  p=MANAGED/'runtime/upgrades.jsonl';return [json.loads(s) for s in p.read_text().splitlines()] if p.exists() else []
-def until(fn,seconds=110):
+def until(fn,seconds=330):
  end=time.monotonic()+seconds
  while time.monotonic()<end:
   if fn():return
@@ -179,7 +179,10 @@ try:
  cli('uninstall','notify-uninstall',root=notify)
  RESULT['bootstrap_artifact_manifest']=BOOT;RESULT['runtime_receipts']=receipts();RESULT['final_state']=state();RESULT['production_signing']='NOT_TESTED_EPHEMERAL_KEYS_ONLY'
 finally:
+ RESULT['all_runtime_receipts']={}
  for root in created:
+  ledger=root/'runtime/upgrades.jsonl'
+  if ledger.exists():RESULT['all_runtime_receipts'][root.name]=[json.loads(s) for s in ledger.read_text().splitlines()]
   if (root/'SUPERVISOR.json').exists():
    cfg=json.loads((root/'SUPERVISOR.json').read_text())
    if cfg.get('service') and not cfg.get('uninstalled'):cli('uninstall','finally-uninstall-'+root.name,root=root,expected=None)

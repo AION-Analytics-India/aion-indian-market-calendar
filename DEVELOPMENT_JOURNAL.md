@@ -60,3 +60,8 @@ Native verification branch was explicitly authorized and submitted. First CI sou
 ## 2026-11-14T15:31:39.216747+00:00 | Native acceptance round three
 
 Native second run exposed a pre-existing older-manifest freshness-marker mutation, which is now repaired without changing the regression. Native Windows lease/tree tests executed; corrected pointer fixture to read only after releasing its intentionally exclusive handle. ACL enumeration now requests SID identities directly rather than doing account-name resolution. Replace Windows SslStream test TLS after native handshake failure with in-memory OpenSSL. Added Windows-only test dependency compatible with the existing cryptography range; normal library/updater dependencies unchanged. Local trusted/untrusted TLS smoke and fixture teardown passed.
+
+
+## 2026-11-14T15:38:16.653807+00:00 | Scheduler acceptance closure
+
+Third native run passed the non-Windows package gates and native Windows lease/process-tree checks, but ACL helper console input still timed out. Replaced redirected Console.In with encoded non-secret path/task metadata, with an explicit allowed-field set; credentials/private keys are never accepted. Mac scheduled update had started before the 110-second test cutoff without a terminal failure. Set the observation window to 330 seconds (poll interval plus bounded worker envelope), retaining exact state/signature/rollback assertions and recording elapsed time. This is test observation, not an SLA. Restrict uploaded lifecycle evidence to JSON/log receipts, not thousands of environment files.
