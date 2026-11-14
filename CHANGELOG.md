@@ -1,4 +1,109 @@
+# Current gate notice, 14 November 2026
+
+The Windows adapter and verification-only artifact CI are STAGED, not natively
+accepted or published. Production signer/channel and actual reboot acceptance
+remain blocked. See RELEASE_STATUS.md. The dated entries below are retained as
+historical implementation evidence; their readiness scopes are not universal.
+NSE CDS documentation now explicitly distinguishes 09:00-17:00 IST and currency
+holidays from equity phases. No calendar calculation or dataset changed here.
+
+# Staged lifecycle follow-up - UNRELEASED, 14 November 2026
+
+- Add explicit managed setup and user-scoped macOS launchd/Linux systemd
+  supervision with start/stop/status/disable/uninstall and explicit rollback.
+- Preserve original pip environments; applications must select the owned runtime.
+- Enforce signed rotating/revoked release identities, patch-series/Python
+  compatibility, exact runtime dependency pins and explicit customer constraints.
+- Defer active managed workloads and require independent admission for protected
+  AION deployments. Add inherited advisory update locks and automatic recovery
+  after all operation holders exit. Preserve old unknown-lock refusal.
+- Exclude Windows automatic installation. Live production trust/channel and
+  deployment approval remain separate gates; no universal automatic upgrade.
+- Preserve all prior calendar release history, 2027 coverage limitations and
+  the independent calendar correctness acceptance decision.
+
+# Candidate remediation, 14 November 2026 (1.8.0, UNRELEASED)
+
+- CAL-02/CAL-03: unsupported session dates refuse; aware datetime date helpers
+  normalize before extracting the date. Caller records have bounded coverage.
+- CAL-04/CAL-05: continuous matching follows phase boundaries; add notified NSE
+  cash CAS and F&O Muhurat schedules. Retain the inclusive legacy activity
+  envelope. December 7 rules remain effective-dated, with explicit expiry-
+  contract limitations. CDS INR sessions and currency holidays are preserved.
+- CAL-06: retire non-calendar update activation; offline also blocks RSS poll.
+- CAL-07: regenerated India-only data through its manifest builder; review due
+  is tied to coverage and remains visibly overdue. No 2027 data was invented.
+- CAL-08/CAL-09: include complete sdist fixtures and require setuptools >=77.
+- Add explicit approved-version discovery and a separate opt-in environment
+  supervisor. It never installs during import/data refresh and never upgrades
+  existing 1.7.1 deployments without operator adoption.
+- Strengthen manifest validation, bounded HTTPS/redirect handling and atomic
+  cross-process adoption. Retain validated data on rejected refreshes.
+
+- Add separately opted-in signed-channel check/watch notices and an explicit
+  automatic approved-install cycle. Optional cryptography dependency, pinned
+  release authority, expiry/replay checks and allowlisted artifacts are isolated
+  from normal calendar calls. Earlier users still need one manual upgrade.
+- Declare and include Python 3.14 in the candidate matrix, alongside 3.10-3.13.
+  Python 3.9 remains unsupported.
+
+This entry describes staged corrections, not a PyPI or data publication. The
+historical notes below are preserved verbatim.
+
 # Changelog
+
+## 1.8.0 (2026-11-10): refreshed data reaches every reader
+
+Corrected Muhurat timings for 8 November 2026 (NSE circular NSE/CMTR/76941: 14:20 to 15:30)
+were published in dataset 2026.11.03. An isolated refresh with 1.7.1 downloaded and verified it
+correctly; the defects were in what happened afterwards.
+
+### Fixed
+
+- A process that had loaded data never looked again. It now re-checks the remote when the daily
+  check is due and re-reads the cache when another process has refreshed it (at most every
+  60 seconds, a few `stat` calls; after a failed check it waits 15 minutes before the network again).
+- Calendar objects copied events and session rules when built, so an object made before a
+  refresh, including the cached ones behind `is_market_open`, `next_trading_day` and the
+  `microstructure` helpers, kept answering from the old data. Objects built from the store now
+  rebuild themselves when the store adopts a new dataset. Objects built from a file or records
+  are unchanged.
+- A verified cache always won over the bundled copy, even an older cache after an upgrade. The
+  newest verified dataset now wins.
+- `refresh(force=True)` could adopt an older remote dataset. An older remote is now refused,
+  forced or not. `force` only skips the daily throttle.
+- Adoption replaced files one at a time through one shared `.staging` directory. Each refresh now
+  stages privately, moves the verified set into `datasets/<version>-<hash>/` and switches the
+  `ACTIVE` pointer with one atomic rename. The flat files are still written for older versions
+  that share the cache. Concurrent refreshers (threads or processes) end on the same verified
+  set, a slower one never switches back to an older dataset, temporary names are unique per
+  call, and a reader that loses a race with cleanup falls back to the next verified dataset
+  rather than to rule-only mode.
+- `python -m aion_indian_market_calendar update` printed "Calendar update complete" whatever
+  happened. It now exits 0 when the data is current, 1 when the refresh failed and 2 when it was
+  not attempted (offline), and logs the dataset in use.
+- A manifest naming a file other than `holidays_YYYY.json` is refused.
+- Bundled data is dataset 2026.11.03 (copied from the data repository, hashes verified):
+  NSE Muhurat 8 Nov 14:20 to 15:30 from the circular; BSE and MCX the same window from press
+  reports, still marked provisional. Three Muhurat tests updated to it.
+
+### Added
+
+- `store.status()` also reports `directory`, `generation`, `last_check`, `check_age_hours`,
+  `last_refresh` (time, result, ok; shared between processes) and `freshness`.
+- `store.freshness()`: `current` (verified data, conclusively checked within 48 hours), `stale`
+  or `indeterminate` (rule-only, offline, or never checked), with a reason. A caller that must not
+  act on outdated sessions can refuse anything but `current`. "Current" means checked, not that the
+  remote has nothing newer: a check just before a publication delays adoption until the next check
+  (at most 24 hours).
+- `store.refresh_succeeded(result)`, `store.generation()` and `IndiaMarketCalendar.data_generation()`.
+
+No new network destination, no identifier, and offline mode is unchanged. Version not bumped:
+the release is a separate decision.
+
+## 1.7.2 (2026-11-02): documentation
+
+The PyPI page now shows the 1.7 features with a working example. No code changed.
 
 ## 1.7.1 (2026-11-02): release checks repaired
 

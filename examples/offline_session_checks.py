@@ -1,4 +1,4 @@
-"""Public PyPI 1.4.1: deterministic offline session checks, not live exchange status."""
+"""Public candidate 1.8.0: deterministic offline session checks, not live exchange status."""
 import os
 from pathlib import Path
 # Configure before importing the package. Offline is explicit, not the default.

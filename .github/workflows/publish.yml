@@ -1,9 +1,9 @@
 name: publish
 
-# Tag-triggered. Nothing publishes from a laptop: a wheel built by hand is a
-# wheel nobody can audit, and an API token on a developer machine is a token
-# that leaks. Trusted publishing (OIDC) means PyPI verifies the workflow itself,
-# and there is no secret to steal.
+# Historical tag publisher; do not tag the candidate until all release gates
+# and the PyPI publishing identity/environment have owner approval. Prior test
+# success does not prove publishing success. Verification-only work belongs in
+# verify-candidate.yml and never grants production trust or release authority.
 on:
   push:
     tags: ["v*"]
@@ -22,7 +22,7 @@ jobs:
         # pyproject.toml (requires-python >=3.10); 3.9 was tested until 1.6.0
         # although pip refuses to install the package there.
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ["3.10", "3.11", "3.13"]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

@@ -1,0 +1,30 @@
+# Prevention rules
+
+- Never use a mutable bundle as a named historical fixture.
+- Never infer a full holiday interval from weekdays, an earnings event or an
+  unrelated event list. Explicit data coverage or supplied session facts are required.
+- Do not equate activity-envelope close-edge compatibility with continuous
+  order matching or a live exchange state.
+- Never enable runtime pip installation or accept an artifact's own adjacent
+  checksum as independent deployment approval.
+- Never mutate an existing deployment environment to test an upgrade.
+- Do not publish a changed shared dataset to old clients without testing their
+  interpretation. They cannot retroactively gain schema/update safeguards.
+- Build and test both artifacts from their own complete sdist inputs.
+
+- Use absolute target paths plus a repository identity assertion for multi-worktree edits.
+
+
+## 2026-11-14T13:48:34.545348+00:00 | Managed update lifecycle candidate
+
+Select bootstrap wheels by the target interpreter/platform tags, never filesystem order. Install declared runtime dependencies before claiming a source suite environment is valid. Verify the OS after uninstall or disable; local flags cannot hide an active job. Repeated systemd disable of external units may remove links: accept a not-found command only with explicit inactive/disabled provider evidence. Claim every new module lock before its first write.
+
+
+## 2026-11-14T14:02:22.419498+00:00 | Final lifecycle evidence and offline publisher boundary
+
+When validating an sdist, retain its full packaged fixture/source-inspection context while proving runtime imports resolve to the separately installed artifact. Missing archive context in a test harness is not a package failure or a passing test.
+
+
+## 2026-11-14T15:13:47.699043+00:00 | Three-platform review candidate
+
+Never use a historical Windows build, a Windows tag, XML serialization or a Mac mock as proof of native candidate acceptance. Record actual source/artifact identity and native provider readback. Never claim scheduled automatic installation from a manual updater command. Do not request or use SYSTEM/S4U, stored passwords or elevated fallback to make user-scoped Windows scheduling pass. A native runner capability failure is a blocker, not permission expansion. Never install an unpublished version from PyPI in documentation. Separate library correctness, managed lifecycle, real reboot and production signing/distribution approvals. Always state CDS INR hours and currency-holiday scope separately from equity phases.

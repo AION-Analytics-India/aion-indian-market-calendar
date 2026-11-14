@@ -28,11 +28,27 @@ def cmd_update(args):
             "set AION_IN_CALENDAR_URL to change the data source."
         )
     result = store.refresh(force=args.force)
-    logger.info("Holiday data refresh: %s", result)
-    logger.info("Calendar update complete")
+    # Until 1.7.2 this always ended with "Calendar update complete", including
+    # after an unreachable host or a refused download. The exit code is now the
+    # outcome: 0 current, 1 the refresh failed, 2 not attempted (offline).
+    info = store.status()
+    summary = (f"dataset {info['dataset_version']} ({info['last_updated']}), source "
+               f"{info['source']}, freshness {info['freshness']}")
+    if store.refresh_succeeded(result):
+        logger.info("Holiday data refresh: %s; %s", result, summary)
+        return 0
+    if result.startswith("offline"):
+        logger.warning("Holiday data refresh not attempted: %s; %s", result, summary)
+        return 2
+    logger.error("Holiday data refresh FAILED: %s; still using %s", result, summary)
+    return 1
 
 def cmd_poll(args):
     logger = logging.getLogger("nse_rss_poller")
+    from . import store
+    if store._offline():
+        logger.warning("RSS poll not attempted: offline policy is set")
+        return 2
     try:
         import feedparser
     except ImportError:
@@ -54,7 +70,11 @@ def cmd_poll(args):
         return dt.datetime(*parsed[:6], tzinfo=dt.timezone.utc)
 
     logger.info("Fetching RSS circulars from %s", NSE_RSS_URL)
-    feed = feedparser.parse(NSE_RSS_URL)
+    raw = store._fetch(NSE_RSS_URL)
+    if raw is None:
+        logger.error("RSS fetch failed")
+        return 1
+    feed = feedparser.parse(raw)
     if getattr(feed, "bozo", False):
         logger.error("RSS parse error: %s", getattr(feed, "bozo_exception", "unknown"))
         sys.exit(1)
@@ -97,7 +117,7 @@ def cmd_poll(args):
                     "",
                     item["summary"] or "_No summary provided._",
                     "",
-                    "Action: review and add/remove entries in `live_events.json` if the calendar should change.",
+                    "Action: review the primary notice and update the shared calendar-data repository through its ingestion and manifest verification process.",
                     "",
                 ]
             )
@@ -155,9 +175,10 @@ def main():
     
     args = parser.parse_args()
     if args.command == "update":
-        cmd_update(args)
+        return cmd_update(args)
     elif args.command == "poll":
-        cmd_poll(args)
+        return cmd_poll(args) or 0
+    return 0
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -1,3 +1,5 @@
+Current release authority: [RELEASE_STATUS.md](RELEASE_STATUS.md). Read before claiming a platform, updater or release gate passed.
+
 # AGENTS.md - aion-indian-market-calendar
 
 Rules for any automated agent, and any contributor, working in this repository. This is a
@@ -29,7 +31,11 @@ currency derivatives). It is maintained by AION Analytics.
   [aion-market-calendar-data](https://github.com/AION-Analytics-India/aion-market-calendar-data).
   The bundled copy in `src/aion_indian_market_calendar/data/` is the offline fallback. Never edit a
   `manifest.json` by hand, and never put a test date into published data.
-- **No network unless a refresh is asked for, and no identifier ever.** `tests/test_no_egress.py`
+- **No network in offline mode; no persistent installation identifier.** Online
+  data loads can check approved public data under the bounded refresh policy.
+  Software checks require separate opt-in. Historical phrasing follows only as
+  context; the current contract is docs/UPDATE_CONTRACT.md.
+- **Offline regression gates.** `tests/test_no_egress.py`
   and `tests/test_no_telemetry.py` guard this and must stay green.
 - **Information, not advice.** The package reports when markets trade and settle. Nothing in the
   code or the documentation tells anyone what to trade.
@@ -41,4 +47,7 @@ currency derivatives). It is maintained by AION Analytics.
 - **Nothing private.** No credentials, no internal paths, no server details, nothing about systems
   outside this repository.
 
-Run the tests offline: `AION_IN_CALENDAR_OFFLINE=1 pytest -q`.
+Run tests offline. POSIX: `AION_IN_CALENDAR_OFFLINE=1 python -m pytest -q`.
+For native Windows library/artifacts use scripts/verify_release_artifacts.py
+with --scope library; scheduler lifecycle is a separate gate. No CI push or
+publication is authorized by these commands.

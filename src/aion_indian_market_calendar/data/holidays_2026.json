@@ -1,6 +1,6 @@
 {
   "timezone": "Asia/Kolkata",
-  "version": "v9_20261018_cas_revision",
+  "version": "2026.11.14",
   "range": {
     "start": "2026-01-01",
     "end": "2026-12-25",
@@ -116,7 +116,7 @@
         {
           "market": "NSE_COMMODITY_DERIVATIVES",
           "open": "17:00:00",
-          "close": "23:30:00"
+          "close": "23:55:00"
         }
       ],
       "policy": {
@@ -548,7 +548,7 @@
         {
           "market": "MCX",
           "open": "17:00:00",
-          "close": "23:30:00"
+          "close": "23:55:00"
         }
       ]
     },
@@ -587,7 +587,7 @@
         {
           "market": "NSE_COMMODITY_DERIVATIVES",
           "open": "17:00:00",
-          "close": "23:30:00"
+          "close": "23:55:00"
         }
       ],
       "policy": {
@@ -2918,8 +2918,8 @@
       "applies_to": [
         "MCX"
       ],
-      "start": "2026-11-08T17:00:00+05:30",
-      "end": "2026-11-08T21:30:00+05:30",
+      "start": "2026-11-08T14:20:00+05:30",
+      "end": "2026-11-08T15:30:00+05:30",
       "windows": {
         "pre_minutes": 30,
         "post_minutes": 0
@@ -2941,17 +2941,17 @@
       "metadata": {
         "exchange": "MCX",
         "segment": "MCX",
-        "source": "Exchange holiday audit 2026-08-01 against NSE/BSE/MCX published 2026 holiday calendars",
-        "status": "timings_pending_exchange_circular",
-        "timings_pending_exchange_circular": true,
+        "source": "Press reports of the MCX notice, checked 2026-11-03; exchange notice not read.",
+        "status": "timings_from_press_reports",
+        "timings_pending_exchange_circular": false,
         "timings_provisional": true,
-        "provisional_note": "Date is confirmed: Diwali Laxmi Pujan, Sunday 2026-11-08. The 18:15-19:15 window is the long-standing convention and is PROVISIONAL until the exchange circular is published. Refresh via the live-events channel to pick up the confirmed timing."
+        "provisional_note": "14:20-15:30 is from press reports of the MCX notice. The MCX notice itself has not been read here, so this stays PROVISIONAL. Replaces the earlier 18:15-19:15 convention."
       },
       "session_override": [
         {
           "market": "MCX",
-          "open": "18:15:00",
-          "close": "19:15:00"
+          "open": "14:20:00",
+          "close": "15:30:00"
         }
       ]
     },
@@ -2963,13 +2963,13 @@
       "applies_to": [
         "BSE_EQUITY"
       ],
-      "start": "2026-11-08T18:15:00+05:30",
-      "end": "2026-11-08T19:15:00+05:30",
+      "start": "2026-11-08T14:20:00+05:30",
+      "end": "2026-11-08T15:30:00+05:30",
       "session_override": [
         {
           "market": "BSE_EQUITY",
-          "open": "18:15:00",
-          "close": "19:15:00"
+          "open": "14:20:00",
+          "close": "15:30:00"
         }
       ],
       "tags": [
@@ -2979,12 +2979,13 @@
       ],
       "description": "Muhurat Trading, the ceremonial Diwali session. Held on a Sunday in 2026, so the day is a trading day despite being a weekend.",
       "metadata": {
-        "timings_pending_exchange_circular": true,
+        "timings_pending_exchange_circular": false,
         "timings_provisional": true,
-        "provisional_note": "Date is confirmed: Diwali Laxmi Pujan, Sunday 2026-11-08. The 18:15-19:15 window is the long-standing convention and is PROVISIONAL until the exchange circular is published. Refresh via the live-events channel to pick up the confirmed timing.",
-        "source": "Exchange holiday audit 2026-08-01 against NSE/BSE/MCX published 2026 holiday calendars",
+        "provisional_note": "14:20-15:30 is from press reports of the BSE notice. The BSE notice itself has not been read here, so this stays PROVISIONAL. Replaces the earlier 18:15-19:15 convention.",
+        "source": "Press reports of the BSE notice, checked 2026-11-03; exchange notice not read.",
         "exchange": "BSE",
-        "segment": "BSE_EQUITY"
+        "segment": "BSE_EQUITY",
+        "status": "timings_from_press_reports"
       }
     },
     {
@@ -2995,13 +2996,13 @@
       "applies_to": [
         "NSE_EQUITY"
       ],
-      "start": "2026-11-08T18:15:00+05:30",
-      "end": "2026-11-08T19:15:00+05:30",
+      "start": "2026-11-08T14:20:00+05:30",
+      "end": "2026-11-08T15:30:00+05:30",
       "session_override": [
         {
           "market": "NSE_EQUITY",
-          "open": "18:15:00",
-          "close": "19:15:00"
+          "open": "14:20:00",
+          "close": "15:30:00"
         }
       ],
       "tags": [
@@ -3011,12 +3012,24 @@
       ],
       "description": "Muhurat Trading, the ceremonial Diwali session. Held on a Sunday in 2026, so the day is a trading day despite being a weekend.",
       "metadata": {
-        "timings_pending_exchange_circular": true,
-        "timings_provisional": true,
-        "provisional_note": "Date is confirmed: Diwali Laxmi Pujan, Sunday 2026-11-08. The 18:15-19:15 window is the long-standing convention and is PROVISIONAL until the exchange circular is published. Refresh via the live-events channel to pick up the confirmed timing.",
-        "source": "Exchange holiday audit 2026-08-01 against NSE/BSE/MCX published 2026 holiday calendars",
+        "timings_pending_exchange_circular": false,
+        "timings_provisional": false,
+        "source": "NSE circular NSE/CMTR/76941 (2026-10-19): continuous trading from 14:20, normal market close 15:30 for non-CAS securities, 15:15 for CAS securities.",
         "exchange": "NSE",
-        "segment": "NSE_EQUITY"
+        "segment": "NSE_EQUITY",
+        "status": "confirmed",
+        "phase_windows": [
+          {
+            "phase": "PRE_OPEN",
+            "open": "14:05:00",
+            "close": "14:20:00"
+          },
+          {
+            "phase": "POST_CLOSE",
+            "open": "15:50:00",
+            "close": "16:00:00"
+          }
+        ]
       }
     },
     {
@@ -3047,7 +3060,7 @@
         {
           "market": "MCX",
           "open": "17:00:00",
-          "close": "23:30:00"
+          "close": "23:55:00"
         }
       ]
     },
@@ -3086,7 +3099,7 @@
         {
           "market": "NSE_COMMODITY_DERIVATIVES",
           "open": "17:00:00",
-          "close": "23:30:00"
+          "close": "23:55:00"
         }
       ],
       "policy": {
@@ -3226,7 +3239,7 @@
         {
           "market": "MCX",
           "open": "17:00:00",
-          "close": "23:30:00"
+          "close": "23:55:00"
         }
       ]
     },
@@ -3265,7 +3278,7 @@
         {
           "market": "NSE_COMMODITY_DERIVATIVES",
           "open": "17:00:00",
-          "close": "23:30:00"
+          "close": "23:55:00"
         }
       ],
       "policy": {
@@ -3584,6 +3597,97 @@
         "source": "https://www.nseindia.com/resources/exchange-communication-holidays",
         "holiday_name": "Christmas"
       }
+    },
+    {
+      "id": "NSE_CAS_MUHURAT_20261108",
+      "name": "NSE CAS-eligible cash Muhurat session",
+      "category": "SPECIAL_TRADING_SESSION",
+      "impact": "LOW",
+      "applies_to": [
+        "NSE_EQUITY_FNO_UNDERLYING"
+      ],
+      "start": "2026-11-08T14:20:00+05:30",
+      "end": "2026-11-08T15:35:00+05:30",
+      "session_override": [
+        {
+          "market": "NSE_EQUITY_FNO_UNDERLYING",
+          "open": "14:20:00",
+          "close": "15:15:00",
+          "kind": "continuous"
+        },
+        {
+          "market": "NSE_EQUITY_FNO_UNDERLYING",
+          "open": "15:15:00",
+          "close": "15:35:00",
+          "kind": "closing_auction"
+        }
+      ],
+      "tags": [
+        "muhurat",
+        "diwali",
+        "special-session"
+      ],
+      "description": "Muhurat Trading, the ceremonial Diwali session. Held on a Sunday in 2026, so the day is a trading day despite being a weekend.",
+      "metadata": {
+        "timings_pending_exchange_circular": false,
+        "timings_provisional": false,
+        "source": "NSE circular NSE/CMTR/76941 (2026-10-19): continuous trading from 14:20, normal market close 15:30 for non-CAS securities, 15:15 for CAS securities.",
+        "exchange": "NSE",
+        "segment": "NSE_EQUITY_FNO_UNDERLYING",
+        "status": "confirmed",
+        "phase_windows": [
+          {
+            "phase": "PRE_OPEN",
+            "open": "14:05:00",
+            "close": "14:20:00"
+          },
+          {
+            "phase": "POST_CLOSE",
+            "open": "15:50:00",
+            "close": "16:00:00"
+          }
+        ]
+      }
+    },
+    {
+      "id": "NSE_FO_MUHURAT_20261108",
+      "name": "NSE F&O Muhurat session",
+      "category": "SPECIAL_TRADING_SESSION",
+      "impact": "LOW",
+      "applies_to": [
+        "NSE_EQUITY_DERIVATIVES"
+      ],
+      "start": "2026-11-08T14:20:00+05:30",
+      "end": "2026-11-08T15:40:00+05:30",
+      "session_override": [
+        {
+          "market": "NSE_EQUITY_DERIVATIVES",
+          "open": "14:20:00",
+          "close": "15:40:00",
+          "kind": "continuous"
+        }
+      ],
+      "tags": [
+        "muhurat",
+        "diwali",
+        "special-session"
+      ],
+      "description": "Muhurat Trading, the ceremonial Diwali session. Held on a Sunday in 2026, so the day is a trading day despite being a weekend.",
+      "metadata": {
+        "timings_pending_exchange_circular": false,
+        "timings_provisional": false,
+        "source": "NSE/FAOP/76940 dated 2026-10-19: pre-open 14:05-14:20; continuous 14:20-15:40.",
+        "exchange": "NSE",
+        "segment": "NSE_EQUITY_DERIVATIVES",
+        "status": "confirmed",
+        "phase_windows": [
+          {
+            "phase": "PRE_OPEN",
+            "open": "14:05:00",
+            "close": "14:20:00"
+          }
+        ]
+      }
     }
   ],
   "market_sessions": {
@@ -3709,7 +3813,7 @@
         "close": "15:30:00",
         "until": "2026-08-02"
       },
-      "note": "The equity derivatives segment operates up to 15:40 (para 4.2.3) — 10 minutes after the CAS order entry period closes. Index derivatives have no auction and trade continuously to 15:40. Dynamic price-band flexing for stock futures does not apply 15:15-15:40 (para 4.4.2).",
+      "note": "The equity derivatives segment operates up to 15:40 (para 4.2.3) \u2014 10 minutes after the CAS order entry period closes. Index derivatives have no auction and trade continuously to 15:40. Dynamic price-band flexing for stock futures does not apply 15:15-15:40 (para 4.4.2).",
       "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16",
       "revised_from_2026_12_07": {
         "effective_from": "2026-12-07",
@@ -4115,7 +4219,7 @@
         "close": "15:30:00",
         "until": "2026-08-02"
       },
-      "note": "The equity derivatives segment operates up to 15:40 (para 4.2.3) — 10 minutes after the CAS order entry period closes. Index derivatives have no auction and trade continuously to 15:40. Dynamic price-band flexing for stock futures does not apply 15:15-15:40 (para 4.4.2).",
+      "note": "The equity derivatives segment operates up to 15:40 (para 4.2.3) \u2014 10 minutes after the CAS order entry period closes. Index derivatives have no auction and trade continuously to 15:40. Dynamic price-band flexing for stock futures does not apply 15:15-15:40 (para 4.4.2).",
       "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/2765/2026 dated 2026-01-16",
       "revised_from_2026_12_07": {
         "effective_from": "2026-12-07",
@@ -4140,10 +4244,14 @@
     "holiday_audit_note": "2026 equity holidays verified against the NSE/BSE published list on 2026-08-01 (16 dates, exact match). MCX verified as 4 full closures plus evening-only days; 2026-01-01 corrected.",
     "sebi_cas_revision_circular": "https://www.sebi.gov.in/legal/circulars/oct-2026/review-of-certain-aspects-of-the-closing-auction-session-market-timings-and-settlement-methodology-for-derivatives-contracts_105293.html",
     "cas_revision_audit_note": "CAS revision read from the SEBI circular PDF of 2026-10-15 (sebi.gov.in attachdocs 1792079571420.pdf, sha256 b2bd9c92fdc8bd0b0076792a64cc087dd921037085ff402065acafbe3590f244) on 2026-10-18. Exchange implementation circulars were not yet found on that date.",
-    "muhurat_2026_note": "Muhurat Trading on Sunday 2026-11-08 is confirmed by NSE circular NSE/FAOP/71777 (2025-12-12); its timings 'shall be notified subsequently'. Checked 2026-10-18: not yet notified, so the bundled 18:15-19:15 stays marked provisional.",
+    "muhurat_2026_note": "Muhurat Trading is on Sunday 2026-11-08. NSE timings are from NSE/CMTR/76941 and NSE/FAOP/76940 (both 2026-10-19). BSE and MCX timings are from press reports and stay provisional until the exchange notice is read. An entry here until 2026-10-18 said timings were not yet notified; that check was not repeated when NSE notified them on 2026-10-19.",
     "nse_cas_revision_circular": "https://nsearchives.nseindia.com/content/circulars/CMTR76963.zip (NSE/CMTR/76963 dated 2026-10-16, forwards the SEBI circular of 2026-10-15)",
     "nse_commodity_winter_hours": "https://nsearchives.nseindia.com/content/circulars/COM76446.pdf",
-    "clearing_holiday_20260826_note": "2026-08-26 (Id-E-Milad) is a clearing holiday: equity cash and equity derivatives trade; currency, interest rate derivatives and corporate bonds are closed (NCL/MFSS/75777 dated 2026-08-17 and the NSE 2026 holiday list). Checked 2026-10-18."
+    "clearing_holiday_20260826_note": "2026-08-26 (Id-E-Milad) is a clearing holiday: equity cash and equity derivatives trade; currency, interest rate derivatives and corporate bonds are closed (NCL/MFSS/75777 dated 2026-08-17 and the NSE 2026 holiday list). Checked 2026-10-18.",
+    "mcx_winter_close_circular": "https://www.mcxindia.com/docs/default-source/circulars/english/2026/september/circular-550--2026.pdf",
+    "nse_commodity_partial_holiday_circular": "https://nsearchives.nseindia.com/content/circulars/COM71784.pdf",
+    "nse_muhurat_cm_circular": "https://nsearchives.nseindia.com/content/circulars/CMTR76941.pdf",
+    "nse_muhurat_fo_circular": "https://nsearchives.nseindia.com/content/circulars/FAOP76940.pdf"
   },
   "session_rules": {
     "NSE_COMMODITY_DERIVATIVES": [
@@ -4314,6 +4422,35 @@
         "reason": "Index and stock derivatives trade until 15:45 (SEBI 2026-10-15, paras 4.2.4 and 4.2.5); expiring index contracts stop at 15:30 on their expiry day.",
         "source": "SEBI HO/47/11/11(3)2025-MRD-POD2/I/23843/2026 dated 2026-10-15, para 4.2 (CAS), effective 2026-12-07"
       }
+    ],
+    "MCX": [
+      {
+        "market": "MCX",
+        "segments": [
+          {
+            "market": "MCX",
+            "open": "08:45:00",
+            "close": "08:59:00",
+            "kind": "continuous"
+          },
+          {
+            "market": "MCX",
+            "open": "09:00:00",
+            "close": "23:55:00",
+            "kind": "continuous"
+          }
+        ],
+        "effective_from": "2026-11-02",
+        "effective_to": "2027-03-12",
+        "reason": "Non-agri commodities trade to 23:55 while US daylight saving is off.",
+        "source": "MCX/TRD/550/2026 dated 2026-09-29, effective 2026-11-02 to 2027-03-12"
+      }
     ]
-  }
+  },
+  "changes": [
+    {
+      "at": "2026-11-14",
+      "change": "Candidate only: represent NSE CMTR/76941 cash phases and FAOP/76940 F&O special session. Coverage remains 2026 only."
+    }
+  ]
 }

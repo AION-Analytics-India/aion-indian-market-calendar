@@ -6,7 +6,7 @@ def test_import_firewall():
     Ensure no files in the workspace (excluding venv, .git, etc.) contain
     references to the legacy dot-path 'projects.aion_indian_market_calendar'.
     """
-    repo_root = Path(__file__).resolve().parents[3]
+    repo_root = Path(__file__).resolve().parents[1]
     forbidden_pattern = re.compile(r"projects\.aion_indian_market_calendar")
     
     matches = []

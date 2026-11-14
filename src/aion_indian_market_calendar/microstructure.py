@@ -138,10 +138,10 @@ def _calendar(year: int) -> IndiaMarketCalendar:
 
 def _as_date(value: date | datetime | str) -> date:
     if isinstance(value, datetime):
-        return value.date()
+        return _coerce_datetime(value, get_ist_timezone()).date()
     if isinstance(value, date):
         return value
-    return date.fromisoformat(str(value)[:10])
+    return _coerce_datetime(value, get_ist_timezone()).date()
 
 
 def _noon(cal: IndiaMarketCalendar, day: date) -> datetime:
@@ -220,9 +220,21 @@ def muhurat_session(
     """The Muhurat session for *market* on *day*, or ``None`` if there is none."""
     when = _as_date(day)
     cal = calendar or _calendar(when.year)
+    cal._require_coverage(when)
     key = cal._resolve_market_key(market)
     lineage = set(cal._market_lineage(key))
-    for event in cal.all_events():
+    def priority(event):
+        ranks = []
+        for segment in event.session_override or []:
+            try:
+                segment_key = cal._resolve_market_key(segment.market)
+            except ValueError:
+                continue
+            if segment_key in lineage:
+                ranks.append(cal._market_lineage(key).index(segment_key))
+        return min(ranks, default=999)
+
+    for event in sorted(cal.all_events(), key=priority):
         if not _is_muhurat_event(event) or not cal._event_active_on_day(event, when):
             continue
         for segment in event.session_override or []:
@@ -239,6 +251,10 @@ def muhurat_session(
                     provisional=bool(metadata.get("timings_provisional")),
                     event_id=event.id,
                 )
+    if key == "NSE_EQUITY_DERIVATIVES" and any(
+        _is_muhurat_event(e) and cal._event_active_on_day(e, when) for e in cal.all_events()
+    ):
+        raise ValueError("NSE F&O special-session schedule is unknown in this dataset")
     return None
 
 
@@ -336,7 +352,15 @@ def get_market_phase(
 
     muhurat = muhurat_session(day, key, calendar=cal)
     if muhurat is not None:
-        return MUHURAT_TRADING if muhurat.open <= clock < muhurat.close else CLOSED
+        event = next(e for e in cal.all_events() if e.id == muhurat.event_id)
+        phases = (event.metadata or {}).get("phase_windows", [])
+        for phase in phases:
+            if time.fromisoformat(phase["open"]) <= clock < time.fromisoformat(phase["close"]):
+                return phase["phase"]
+        for segment in cal.get_session(local, market=key) or []:
+            if segment.open <= clock < segment.close:
+                return CLOSING_AUCTION if segment.kind == SESSION_KIND_CLOSING_AUCTION else MUHURAT_TRADING
+        return CLOSED
     if not cal.is_trading_day(local, market=key):
         return CLOSED
 

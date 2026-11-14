@@ -29,3 +29,7 @@ dist/
 # Python bytecode caches; 12 were tracked by mistake until 1.5.0.
 __pycache__/
 *.pyc
+
+# Agent reservations and disposable test output are never release artifacts.
+.locks/
+.pytest_cache/

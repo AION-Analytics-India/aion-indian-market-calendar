@@ -175,14 +175,16 @@ def test_muhurat_on_a_sunday(cal):
     assert ms.is_muhurat_trading("2026-11-08", "BSE", calendar=cal) is True
     assert ms.is_muhurat_trading("2026-11-09", "NSE", calendar=cal) is False
     session = ms.muhurat_session("2026-11-08", "NSE", calendar=cal)
-    assert (session.open, session.close) == (time(18, 15), time(19, 15))
-    assert session.provisional is True
+    # NSE/CMTR/76941 (19 Oct 2026); dataset 2026.11.03. Was a provisional 18:15-19:15.
+    assert (session.open, session.close) == (time(14, 20), time(15, 30))
+    assert session.provisional is False
 
 
 def test_muhurat_phase(cal):
-    assert ms.get_market_phase("2026-11-08T18:30", "NSE", calendar=cal) == ms.MUHURAT_TRADING
-    assert ms.get_market_phase("2026-11-08T09:30", "NSE", calendar=cal) == ms.CLOSED
-    assert ms.get_market_phase("2026-11-08T19:15", "NSE", calendar=cal) == ms.CLOSED
+    assert ms.get_market_phase("2026-11-08T14:30+05:30", "NSE", calendar=cal) == ms.MUHURAT_TRADING
+    assert ms.get_market_phase("2026-11-08T09:30+05:30", "NSE", calendar=cal) == ms.CLOSED
+    assert ms.get_market_phase("2026-11-08T15:30+05:30", "NSE", calendar=cal) == ms.CLOSED
+    assert ms.get_market_phase("2026-11-08T18:30+05:30", "NSE", calendar=cal) == ms.CLOSED
 
 
 # --- expiries -----------------------------------------------------------------

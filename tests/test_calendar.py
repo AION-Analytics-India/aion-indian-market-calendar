@@ -455,9 +455,9 @@ def test_out_of_range_dates_are_reported_not_answered_silently(caplog):
     assert calendar.covers(date(2026, 11, 8))
     assert not calendar.covers(date(2027, 1, 26))
 
-    with caplog.at_level("WARNING"):
+    # Strengthened refusal contract: a warning plus a guessed weekday is no longer accepted.
+    with pytest.raises(ValueError, match="outside the bundled calendar range"):
         calendar.is_trading_day(datetime(2027, 1, 26, 10, 0), market="NSE_EQUITY")
-    assert "outside the bundled calendar range" in caplog.text
 
     # In-range queries stay quiet.
     caplog.clear()
@@ -469,18 +469,21 @@ def test_out_of_range_dates_are_reported_not_answered_silently(caplog):
 def test_muhurat_trading_makes_a_sunday_a_trading_day():
     """Diwali Laxmi Pujan falls on Sunday 2026-11-08; the Muhurat session runs anyway."""
     calendar = EventCalendar.bundled(2026)
-    evening = datetime(2026, 11, 8, 18, 30)
+    # Dataset 2026.11.03: NSE circular NSE/CMTR/76941 (19 Oct 2026) sets 14:20-15:30.
+    # Until that dataset the bundle carried a provisional 18:15-19:15 window.
+    inside = datetime(2026, 11, 8, 14, 30)
 
     for market in ("NSE_EQUITY", "NSE_EQUITY_FNO_UNDERLYING", "BSE_EQUITY", "MCX"):
-        assert calendar.is_trading_day(evening, market=market), market
-        assert calendar.is_market_open(evening, market=market), market
+        assert calendar.is_trading_day(inside, market=market), market
+        assert calendar.is_market_open(inside, market=market), market
         # Only the ceremonial window trades — the rest of the Sunday is shut.
         assert not calendar.is_market_open(datetime(2026, 11, 8, 12, 0), market=market), market
+        assert not calendar.is_market_open(datetime(2026, 11, 8, 18, 30), market=market), market
 
     events = calendar.events_on("2026-11-08", exchange="NSE_EQUITY")
     assert [e.name for e in events] == ["NSE Muhurat Trading (Diwali Laxmi Pujan)"]
-    # Timings are provisional until the exchange circular lands.
-    assert events[0].metadata["timings_pending_exchange_circular"] is True
+    assert events[0].metadata["timings_pending_exchange_circular"] is False
+    assert "NSE/CMTR/76941" in events[0].metadata["source"]
 
 
 def _fake_refresh(monkeypatch, tmp_path, payload):

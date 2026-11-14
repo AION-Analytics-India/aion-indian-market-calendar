@@ -1,3 +1,7 @@
+Dated historical evidence for 1.3.3, preserved unchanged below. It is not the
+current network/privacy contract. See [RELEASE_STATUS.md](../RELEASE_STATUS.md)
+and [UPDATE_CONTRACT.md](UPDATE_CONTRACT.md) for the unreleased candidate.
+
 # Telemetry audit — aion-indian-market-calendar
 
 *Audited 2026-09-12, against the source at version 1.3.3.*

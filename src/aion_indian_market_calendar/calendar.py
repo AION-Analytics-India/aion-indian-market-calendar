@@ -464,42 +464,32 @@ class IndiaMarketCalendar:
         taxonomy_manifesto_url: str | None = None,
         taxonomy_refresh_enabled: bool = True,
         _raw: dict | list | None = None,
+        _store_year: int | None = None,
+        _store_generation: int | None = None,
     ):
+        # A calendar built from the store follows it: when the store adopts a
+        # newer verified dataset, this object rebuilds itself on its next query
+        # (see _sync_with_store). One built from records or a file never changes.
+        self._store_year: int | None = _store_year
+        self._store_generation: int | None = _store_generation
+        self._syncing = False
         if _raw is None:
             if events_json_path is None:
                 # Refreshed data if there is any, bundled otherwise. The store
                 # verifies a SHA-256 per file before adopting anything and falls
                 # back to the bundled copy on any failure, so this cannot end up
                 # serving something unverified.
+                self._store_year = _DEFAULT_DATA_YEAR
+                self._store_generation = store.generation()
                 raw = store.payload_for(_DEFAULT_DATA_YEAR)
                 if raw is None:
-                    data = pkgutil.get_data(__package__, f"data/holidays_{_DEFAULT_DATA_YEAR}.json")
-                    if data is None:
-                        raise FileNotFoundError(
-                            f"Bundled calendar data/holidays_{_DEFAULT_DATA_YEAR}.json not found")
-                    raw = json.loads(data.decode("utf-8"))
+                    raise ValueError("No verified calendar dataset is available; session status is unknown")
             else:
                 raw = json.loads(Path(events_json_path).read_text(encoding="utf-8"))
         else:
             raw = _raw
 
-        payload = self._normalize_payload(raw)
-        self.timezone = payload["timezone"]
-        self.tz = get_timezone(self.timezone)
-        self.default_sessions = self._load_default_sessions(payload.get("market_sessions"))
-        self.session_rules = self._load_session_rules(payload.get("session_rules"))
-        self.sources = dict(payload.get("sources") or {})
-        self.market_timings = dict(payload.get("market_timings") or {})
-        coverage = dict(payload.get("range") or {})
-        self.coverage_start = _parse_coverage_date(coverage.get("start"))
-        self.coverage_end = _parse_coverage_date(coverage.get("end"))
-        self._coverage_warned = False
-        self.events = tuple(
-            sorted(
-                (self._normalize_event(event) for event in payload["events"]),
-                key=lambda event: (event.start, event.id),
-            )
-        )
+        self._apply_payload(self._normalize_payload(raw))
         self.refresh_url = refresh_url
         self.refresh_interval = timedelta(hours=refresh_interval_hours)
         # Accepted and ignored since 1.4.0. The keyword stays so code written
@@ -574,11 +564,11 @@ class IndiaMarketCalendar:
         taxonomy_manifesto_url: str | None = None,
         taxonomy_refresh_enabled: bool = True,
     ) -> "IndiaMarketCalendar":
+        generation = store.generation()
         raw_payload = store.payload_for(year)
-        data = (json.dumps(raw_payload).encode("utf-8") if raw_payload is not None
-                else pkgutil.get_data(__package__, f"data/holidays_{year}.json"))
-        if data is None:
-            raise FileNotFoundError(f"Bundled calendar data/holidays_{year}.json not found")
+        if raw_payload is None:
+            raise FileNotFoundError(f"No verified calendar data for {year}")
+        data = json.dumps(raw_payload).encode("utf-8")
         return cls(
             refresh_url=refresh_url,
             refresh_interval_hours=refresh_interval_hours,
@@ -586,7 +576,121 @@ class IndiaMarketCalendar:
             taxonomy_manifesto_url=taxonomy_manifesto_url,
             taxonomy_refresh_enabled=taxonomy_refresh_enabled,
             _raw=json.loads(data.decode("utf-8")),
+            _store_year=year,
+            _store_generation=generation,
         )
+
+    # ------------------------------------------------------------------
+    # Payload-derived state. Every read goes through _sync_with_store, so an
+    # object built before a refresh does not keep answering from replaced data
+    # (it did until 1.7.2: the store updated, the object did not).
+    # ------------------------------------------------------------------
+    def _apply_payload(self, payload: dict[str, object]) -> None:
+        self.timezone = payload["timezone"]
+        self.tz = get_timezone(self.timezone)
+        self._default_sessions = self._load_default_sessions(payload.get("market_sessions"))
+        self._session_rules = self._load_session_rules(payload.get("session_rules"))
+        self._sources = dict(payload.get("sources") or {})
+        self._market_timings = dict(payload.get("market_timings") or {})
+        coverage = dict(payload.get("range") or {})
+        self._declared_coverage = bool(coverage.get("start") and coverage.get("end"))
+        self._coverage_start = _parse_coverage_date(coverage.get("start"))
+        self._coverage_end = _parse_coverage_date(coverage.get("end"))
+        self._coverage_warned = False
+        self._events = tuple(
+            sorted(
+                (self._normalize_event(event) for event in payload["events"]),
+                key=lambda event: (event.start, event.id),
+            )
+        )
+
+        if not coverage and self._events:
+            self._coverage_start = min(e.start.date() for e in self._events)
+            self._coverage_end = max((e.end or e.start).date() for e in self._events)
+
+    def _sync_with_store(self) -> None:
+        """Rebuild from the store when it has adopted a different dataset."""
+        if self.__dict__.get("_store_year") is None or self.__dict__.get("_syncing"):
+            return
+        current = store.generation()
+        if current == self._store_generation:
+            return
+        self._syncing = True
+        try:
+            raw = store.payload_for(self._store_year)
+            if raw is not None:
+                self._apply_payload(self._normalize_payload(raw))
+            self._store_generation = current
+        finally:
+            self._syncing = False
+
+    def data_generation(self) -> int | None:
+        """The store generation this object currently answers from (None if not store-backed)."""
+        self._sync_with_store()
+        return self._store_generation
+
+    @property
+    def events(self) -> tuple[MarketEvent, ...]:
+        self._sync_with_store()
+        return self._events
+
+    @events.setter
+    def events(self, value) -> None:
+        self._events = tuple(value)
+
+    @property
+    def default_sessions(self):
+        self._sync_with_store()
+        return self._default_sessions
+
+    @default_sessions.setter
+    def default_sessions(self, value) -> None:
+        self._default_sessions = value
+
+    @property
+    def session_rules(self):
+        self._sync_with_store()
+        return self._session_rules
+
+    @session_rules.setter
+    def session_rules(self, value) -> None:
+        self._session_rules = value
+
+    @property
+    def sources(self) -> dict:
+        self._sync_with_store()
+        return self._sources
+
+    @sources.setter
+    def sources(self, value) -> None:
+        self._sources = value
+
+    @property
+    def market_timings(self) -> dict:
+        self._sync_with_store()
+        return self._market_timings
+
+    @market_timings.setter
+    def market_timings(self, value) -> None:
+        self._market_timings = value
+
+    @property
+    def coverage_start(self):
+        self._sync_with_store()
+        return self._coverage_start
+
+    @coverage_start.setter
+    def coverage_start(self, value) -> None:
+        self._coverage_start = value
+
+    @property
+    def coverage_end(self):
+        self._sync_with_store()
+        return self._coverage_end
+
+    @coverage_end.setter
+    def coverage_end(self, value) -> None:
+        self._coverage_end = value
 
     @staticmethod
     def _normalize_payload(raw: dict | list) -> dict[str, object]:
@@ -686,14 +790,16 @@ class IndiaMarketCalendar:
         Kept when the legacy live-events refresh was removed in 1.4.1: it was
         only ever a helper that path used, not part of it.
         """
+        if store._offline():
+            raise ValueError("offline: network access refused")
         request = Request(url, headers=self._refresh_headers())
         with urlopen(request, timeout=10) as response:
             return json.load(response)
 
     def _taxonomy_cache_dir(self) -> Path:
-        base = Path(os.getenv("AION_IMI_TAXONOMY_CACHE_DIR", "")).expanduser() if os.getenv("AION_IMI_TAXONOMY_CACHE_DIR") else Path(os.path.expanduser("~")) / ".aion_indian_market" / "taxonomy"
-        base.mkdir(parents=True, exist_ok=True)
-        return base
+        # Compatibility validation is confined to calendar-owned cache space.
+        # The retired updater never writes another product's cache or artifacts.
+        return store.CACHE_DIR / "retired-compatibility"
 
     def _taxonomy_manifesto_cache_path(self) -> Path:
         return self._taxonomy_cache_dir() / "taxonomy_manifesto.json"
@@ -756,6 +862,8 @@ class IndiaMarketCalendar:
 
 
     def _fetch_bytes(self, url: str) -> bytes:
+        if store._offline():
+            raise ValueError("offline: network access refused")
         request = Request(url, headers=self._refresh_headers())
         with urlopen(request, timeout=10) as response:
             return response.read()
@@ -817,58 +925,16 @@ class IndiaMarketCalendar:
             staged.append((cache_dir / name, payload))
             downloaded.append(name)
 
-        for target, payload in staged:
-            target.write_bytes(payload)
-
-        taxonomy_file = str(manifesto.get("taxonomy_file") or "taxonomy_india_v2_calibrated.yaml")
-        if str(manifesto.get("signature") or ""):
-            main_path = cache_dir / Path(taxonomy_file).name
-            if main_path.exists() and self._sha256_bytes(main_path.read_bytes()) != str(manifesto["signature"]):
-                raise ValueError(f"Manifesto signature mismatch for {taxonomy_file}")
-
-        self._taxonomy_manifesto_cache_path().write_text(
-            json.dumps(manifesto, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
-        self._reload_imi_runtime_if_available()
-        logger.info("Downloaded IMI taxonomy update %s with files: %s", manifesto.get("version"), ", ".join(downloaded))
-        return bool(downloaded)
-
+        raise RuntimeError("Non-calendar updates are retired; nothing was written")
     @staticmethod
     def _reload_imi_runtime_if_available() -> None:
-        try:
-            from aion_imi import reload_runtime
-
-            reload_runtime()
-        except Exception as exc:
-            logger.debug("IMI runtime reload after taxonomy refresh skipped: %s", exc)
+        raise RuntimeError("Non-calendar runtime updates are retired")
 
     def refresh_taxonomy_manifesto(self, force: bool = False) -> bool:
-        if not self.taxonomy_refresh_enabled:
-            return False
-        manifesto_url = self._effective_taxonomy_manifesto_url()
-        if not manifesto_url:
-            return False
-        local = self._cached_taxonomy_manifesto()
-        if (
-            not force
-            and local is not None
-            and self._last_refreshed is not None
-            and (self._now() - self._last_refreshed) < self.refresh_interval
-        ):
-            return False
-
-        try:
-            remote = self._fetch_json(manifesto_url)
-            if not self._remote_manifesto_is_newer(remote, local):
-                return False
-            return self._download_taxonomy_manifesto_update(manifesto_url, remote)
-        except Exception as exc:
-            logger.warning("Failed to refresh IMI taxonomy manifesto: %s", exc)
-            return False
-
-
-
+        """Retired compatibility entry point. Never fetches or updates another product."""
+        warnings.warn("refresh_taxonomy_manifesto is retired; only calendar data refresh is supported",
+                      DeprecationWarning, stacklevel=2)
+        return False
 
     def refresh(self, force: bool = False) -> bool:
         """Fetch newer holiday data if there is any.
@@ -969,6 +1035,9 @@ class IndiaMarketCalendar:
         *,
         exchange: str | None = None,
     ) -> list[date]:
+        if year is not None and not (self.coverage_start and self.coverage_end and
+                                     self.coverage_start.year <= year <= self.coverage_end.year):
+            raise ValueError(f"No verified holiday coverage for {year}")
         target_market = self._resolve_market_key(exchange or market)
         results = {
             event.start.date()
@@ -982,27 +1051,29 @@ class IndiaMarketCalendar:
 
     def covers(self, day: date) -> bool:
         """Whether *day* falls inside the bundled data's declared range."""
-        if self.coverage_start is not None and day < self.coverage_start:
+        day = _coerce_datetime(day, self.tz).date()
+        if not self._declared_coverage:
+            # Caller records with no declared interval establish only explicit
+            # holiday/session facts, not the weekdays between unrelated events.
+            return any(self._event_active_on_day(e, day) and (e.is_holiday or e.session_override)
+                       for e in self._all_events())
+        if self.coverage_start is None or self.coverage_end is None:
+            return False
+        if day < self.coverage_start:
             return False
         if self.coverage_end is not None and day > self.coverage_end:
             return False
         return True
 
+    def _require_coverage(self, day: date) -> None:
+        if not self.covers(day):
+            raise ValueError(
+                f"{day} is outside the bundled data range / outside the bundled calendar range "
+                f"({self.coverage_start} to {self.coverage_end}); session status is unknown")
+
     def _warn_if_outside_coverage(self, day: date) -> None:
-        """Outside the bundled range there are no holiday records, so answers
-        degrade to weekday-only logic and quietly report holidays as open. Say so
-        once per calendar rather than letting it pass silently."""
-        if self._coverage_warned or self.covers(day):
-            return
-        self._coverage_warned = True
-        logger.warning(
-            "Date %s is outside the bundled calendar range (%s to %s). No holiday data exists "
-            "there, so trading-day answers fall back to weekday-only logic and will report "
-            "holidays as open. Load the data file for that year instead.",
-            day.isoformat(),
-            self.coverage_start,
-            self.coverage_end,
-        )
+        """Compatibility alias; unsupported questions now refuse instead of warning."""
+        self._require_coverage(day)
 
     def is_trading_day(self, dt: datetime, market: str = "NSE") -> bool:
         local_dt = _coerce_datetime(dt, self.tz)
@@ -1010,6 +1081,11 @@ class IndiaMarketCalendar:
         market_key = self._resolve_market_key(market)
         if self._session_overrides_for_day(local_dt.date(), market_key):
             return True
+        if market_key == "NSE_EQUITY_DERIVATIVES" and any(
+            self._event_active_on_day(e, local_dt.date()) and "MUHURAT" in e.id.upper()
+            for e in self._all_events()
+        ):
+            raise ValueError("NSE F&O special-session schedule is unknown in this dataset")
         if local_dt.weekday() >= 5:
             return False
         return local_dt.date() not in set(self.holidays(market=market_key, year=local_dt.year))
@@ -1032,6 +1108,10 @@ class IndiaMarketCalendar:
                     if market_key in COMMODITY_SEASONAL_MARKETS and segment.open == _COMMODITY_EVENING_OPEN:
                         segment = _with_seasonal_close(segment, day)
                     overrides.append(segment)
+        ordered = self._market_lineage(market_key)
+        if overrides:
+            rank = min(ordered.index(self._resolve_market_key(seg.market)) for seg in overrides)
+            overrides = [seg for seg in overrides if ordered.index(self._resolve_market_key(seg.market)) == rank]
         return sorted(overrides, key=lambda segment: (segment.open, segment.close))
 
     def active_session_rule(self, day: date, market: str = "NSE") -> SessionRule | None:
@@ -1059,6 +1139,7 @@ class IndiaMarketCalendar:
 
     def get_session(self, dt: datetime, market: str = "NSE") -> list[SessionSegment] | None:
         local_dt = _coerce_datetime(dt, self.tz)
+        self._require_coverage(local_dt.date())
         market_key = self._resolve_market_key(market)
         overrides = self._session_overrides_for_day(local_dt.date(), market_key)
         if overrides:
@@ -1098,7 +1179,8 @@ class IndiaMarketCalendar:
         an auction, not continuous trading.
         """
         local_dt = _coerce_datetime(dt or self._now(), self.tz)
-        return any(segment.is_continuous for segment in self.active_sessions(local_dt, market=market))
+        from .microstructure import get_market_phase, CONTINUOUS, MUHURAT_TRADING
+        return get_market_phase(local_dt, market, calendar=self) in {CONTINUOUS, MUHURAT_TRADING}
 
     def closing_auction_session(self, dt: datetime, market: str = "NSE") -> SessionSegment | None:
         """The Closing Auction Session segment for *market* on that day, if it has one."""

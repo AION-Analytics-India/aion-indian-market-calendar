@@ -1,3 +1,5 @@
+Current release authority: [RELEASE_STATUS.md](RELEASE_STATUS.md). Read before claiming a platform, updater or release gate passed.
+
 # Contributing
 
 Report a calendar issue with the exchange, market segment, date, expected result, package version and the primary exchange announcement that supports the correction.
@@ -6,7 +8,8 @@ Indian exchange holidays are announced data. Do not assume a weekday rule or ano
 
 ## Code changes
 
-Fork and branch from main. Add a regression test for the behavior changed, then run `python -m pytest tests -q`. Keep changes scoped to the public calendar implementation.
+Fork and branch from main. Add a regression test for the behavior changed, then run the appropriate platform scope from RELEASE_STATUS.md. POSIX uses
+`python -m pytest tests -q`; Windows library and native updater gates are separate. Keep changes scoped to the public calendar implementation.
 
 ## Licence
 
