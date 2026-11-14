@@ -43,3 +43,8 @@ A bound TLS port is not a verified authenticated handshake. Exercise a valid CA 
 ## 2026-11-14T15:38:16.653807+00:00 | Scheduler acceptance closure
 
 Do not claim an attempted scheduled install is failed or successful without its terminal state. Bound asynchronous observation against scheduler and worker budgets, record actual elapsed time and preserve timed-out evidence. Never upload disposable environments merely to preserve a few receipts. Native invocation metadata must be explicitly constrained and must never contain credentials or signing keys.
+
+
+## 2026-11-14T15:43:41.301220+00:00 | Native module boundary
+
+Native subprocess environments must supply their documented OS/module boundary. Pin system module paths, avoid user module autoload and preserve owner/DACL invariants. Treat alternative explanations as hypotheses until reproduced native evidence confirms the correction.

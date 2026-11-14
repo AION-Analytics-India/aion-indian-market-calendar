@@ -65,3 +65,8 @@ Native second run exposed a pre-existing older-manifest freshness-marker mutatio
 ## 2026-11-14T15:38:16.653807+00:00 | Scheduler acceptance closure
 
 Third native run passed the non-Windows package gates and native Windows lease/process-tree checks, but ACL helper console input still timed out. Replaced redirected Console.In with encoded non-secret path/task metadata, with an explicit allowed-field set; credentials/private keys are never accepted. Mac scheduled update had started before the 110-second test cutoff without a terminal failure. Set the observation window to 330 seconds (poll interval plus bounded worker envelope), retaining exact state/signature/rollback assertions and recording elapsed time. This is test observation, not an SLA. Restrict uploaded lifecycle evidence to JSON/log receipts, not thousands of environment files.
+
+
+## 2026-11-14T15:43:41.301220+00:00 | Native module boundary
+
+Native Windows startup works in the full runner environment but stalls in stripped child environments. The next candidate pins module loading to the system PowerShell Utility module and uses direct .NET process/ACL APIs instead of autoloaded management/security cmdlets. This is a narrowly scoped native-boundary correction; it is not yet a proven native fix. Portable adapter/verifier tests remain 11/11. No permission or trust checks removed.

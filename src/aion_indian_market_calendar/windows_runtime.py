@@ -34,6 +34,8 @@ def powershell(script: str, data: dict) -> dict:
     payload=base64.b64encode(json.dumps(data,ensure_ascii=True).encode()).decode('ascii')
     prefix='''
 $ErrorActionPreference='Stop'
+$env:PSModulePath=$PSHOME+'\\Modules'
+Import-Module ($PSHOME+'\\Modules\\Microsoft.PowerShell.Utility\\Microsoft.PowerShell.Utility.psd1') -ErrorAction Stop
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)
 ''' + "$d=[System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('"+payload+"')) | ConvertFrom-Json\n"
     encoded=base64.b64encode((prefix+script).encode('utf-16-le')).decode('ascii')
@@ -53,7 +55,7 @@ IDENTITY='''
 $id=[System.Security.Principal.WindowsIdentity]::GetCurrent()
 $sid=$id.User.Value
 $principal=[System.Security.Principal.WindowsPrincipal]::new($id)
-$session=(Get-Process -Id $PID).SessionId
+$session=[System.Diagnostics.Process]::GetCurrentProcess().SessionId
 if($id.IsSystem -or $sid -in @('S-1-5-18','S-1-5-19','S-1-5-20')){throw 'Service-account enrollment refused'}
 '''
 
@@ -77,8 +79,8 @@ def reject_reparse(path: Path):
 def private_path(path: Path):
     reject_reparse(path)
     powershell(IDENTITY+'''
-$acl=Get-Acl -LiteralPath $d.path
-$descriptor=[System.Security.AccessControl.RawSecurityDescriptor]::new($acl.Sddl)
+if([System.IO.Directory]::Exists($d.path)){$acl=[System.IO.Directory]::GetAccessControl($d.path)}else{$acl=[System.IO.File]::GetAccessControl($d.path)}
+$descriptor=[System.Security.AccessControl.RawSecurityDescriptor]::new($acl.GetSecurityDescriptorSddlForm([System.Security.AccessControl.AccessControlSections]::All))
 if($null -eq $descriptor.DiscretionaryAcl){throw 'Null DACL refused'}
 $owner=$acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value
 $trusted=@($sid,'S-1-5-18','S-1-5-32-544')
@@ -109,7 +111,7 @@ foreach($who in @($sid,'S-1-5-18','S-1-5-32-544')){
   [System.Security.AccessControl.PropagationFlags]::None,[System.Security.AccessControl.AccessControlType]::Allow)
  $acl.AddAccessRule($rule)
 }
-Set-Acl -LiteralPath $d.path -AclObject $acl
+[System.IO.Directory]::SetAccessControl($d.path,$acl)
 @{private=$true} | ConvertTo-Json -Compress
 ''',{'path':str(path)})
     private_path(path)

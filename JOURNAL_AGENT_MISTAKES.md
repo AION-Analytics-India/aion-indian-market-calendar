@@ -46,3 +46,8 @@ The first pointer-lock test tried to reopen a file while intentionally denying e
 ## 2026-11-14T15:38:16.653807+00:00 | Scheduler acceptance closure
 
 The Windows ACL helper remained blocked despite one-line stdin and SID enumeration; those changes were not claimed as verified fixes. Native lease/tree primitives passed. The test-only native bridge now avoids Console.In under pytest/redirected runners, carrying only explicitly allowed non-secret metadata. A 110-second scheduler observation deadline stopped a still-in-progress Mac upgrade; changed the test observation budget with the polling/worker envelope documented, rather than relaxing the required installed-version or teardown outcome. The first artifact upload included disposable environments; later uploads are restricted to receipts/logs and the local investigation extracted only necessary files.
+
+
+## 2026-11-14T15:43:41.301220+00:00 | Native module boundary
+
+Console-input removal did not resolve the native timeout and is not recorded as a confirmed root cause. The retained failed results show the reduced-environment boundary still blocked. Further correction removes dependency on lazy PowerShell cmdlet/module discovery; native execution must decide its result. Do not infer a completed Windows lifecycle from any partial step.

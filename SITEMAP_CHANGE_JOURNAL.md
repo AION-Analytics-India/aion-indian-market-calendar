@@ -67,3 +67,8 @@ CAL-WINDOWS-TLS-FIXTURE now uses in-memory OpenSSL with a Windows-only test extr
 ## 2026-11-14T15:38:16.653807+00:00 | Scheduler acceptance closure
 
 CAL-WINDOWS-ADAPTER uses encoded allowlisted local metadata instead of redirected console reads; there are no credential fields. Test evidence upload excludes managed environments. Native test observation window reflects scheduler/worker timing without changing update or market behavior. Map structure unchanged.
+
+
+## 2026-11-14T15:43:41.301220+00:00 | Native module boundary
+
+CAL-WINDOWS-ADAPTER now explicitly loads system PowerShell Utility and uses .NET process/ACL operations. No new service, credential store, scheduler privilege or backend dependency. Native validation remains pending.

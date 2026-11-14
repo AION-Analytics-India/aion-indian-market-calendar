@@ -185,3 +185,5 @@ Native CI correction: CAL-STORE bounded adoption waits now reconcile a peer-comp
 Native round-three correction: an older data manifest no longer advances .last_check. CAL-WINDOWS-ADAPTER enumerates ACL identities as SIDs without account-name resolution. Native pointer contention tests read state after releasing their exclusive handle. The test-only TLS boundary uses in-memory OpenSSL after SslStream handshake refusal; production TLS/signing checks remain intact.
 
 Native invocation refinement: CAL-WINDOWS-ADAPTER carries encoded allowlisted non-secret metadata and no credential fields. CAL-OS-LIFECYCLE records terminal receipts even on failure, uses a 330-second observation budget and uploads only logs/JSON, preserving raw installed environments on the disposable runner until job teardown. No runtime scheduler policy or market timing changed.
+
+Native module boundary: system PowerShell Utility is an explicit dependency; process/session and ACL operations use .NET directly. User module autoload is excluded. The fix is staged pending native results, with the same consent, ACL and task ownership contracts.
