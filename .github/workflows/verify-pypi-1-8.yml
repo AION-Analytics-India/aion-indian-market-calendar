@@ -1,0 +1,49 @@
+name: Verify published Calendar 1.8.0 bytes
+on:
+  push:
+    branches: [ci/calendar-1.8.0-pypi-readback]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  installed:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 711447e748eaffa658aeb5fc053fff4155386e77
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with: {python-version: '3.13'}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          run-id: 43620359086
+          github-token: ${{ github.token }}
+          name: calendar-candidate
+          path: accepted
+      - name: Download and independently hash actual PyPI distributions
+        shell: python
+        run: |
+          import pathlib, hashlib, json, urllib.request as u, urllib.parse as p
+          expected = {'aion_indian_market_calendar-1.8.0-py3-none-any.whl':'438378a6debea85b1e159e1671043beb3c2862fc3190bf2da0335e86fab8aaf3','aion_indian_market_calendar-1.8.0.tar.gz':'fd1f40a0e0ad22a763ab179998b0b805be3491fcb96175cb2d38fd213b28bcb5'}
+          j=json.load(u.urlopen('https://pypi.org/pypi/aion-indian-market-calendar/1.8.0/json',timeout=30))
+          assert j['info']['version']=='1.8.0' and set(expected)=={item['filename'] for item in j['urls']}
+          out=pathlib.Path('pypi-distributions'); out.mkdir()
+          for a in j['urls']:
+              name=a['filename']; assert not a['yanked'] and p.urlsplit(a['url']).hostname=='files.pythonhosted.org'
+              raw=u.urlopen(a['url'],timeout=30).read(400000)
+              assert len(raw)==a['size'] and hashlib.sha256(raw).hexdigest()==expected[name]==a['digests']['sha256']
+              (out/name).write_bytes(raw)
+      - name: Test clean published wheel and sdist installs
+        run: python scripts/verify_release_artifacts.py test --dist pypi-distributions --inventory accepted/ci/BUILD_INVENTORY.json --source-sha 711447e748eaffa658aeb5fc053fff4155386e77 --scope full --output readback
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: pypi-readback-${{ matrix.os }}
+          path: readback/
+          retention-days: 14

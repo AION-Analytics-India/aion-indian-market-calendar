@@ -267,3 +267,5 @@ Final source-consistency follow-up updates contributor manual-release policy and
 ## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
 
 CAL-STORE now recognizes Windows CRT errno-only EACCES as bounded sharing/permission contention, per CPython _wopen/SetFromErrno and Microsoft CRT documentation. No POSIX broadening, stale-lock theft, permissions change or changed deadline. Existing concurrency assertion remains mandatory; deterministic persistent-denial tests added. Calendar rule/data and managed-update graph unchanged.
+
+2026-11-15: CAL-CI-ARTIFACTS: branch-only verify-pypi-1-8.yml downloads the original 1.8.0 files from PyPI, checks both approved digests, and runs isolated wheel and sdist installs on macOS and Linux; it cannot publish or deploy.
