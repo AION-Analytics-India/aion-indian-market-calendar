@@ -1,0 +1,68 @@
+# AION Indian Market Calendar
+
+> Canonical, MIT-licensed Python calendar for supported Indian financial-market sessions, holidays, settlement days, selected expiry rules and special trading sessions. This file is an index for humans and language models, not a live exchange-status feed.
+
+## Canonical sources
+
+- [Maintained GitHub source and README](https://github.com/AION-Analytics-India/aion-indian-market-calendar): Source, examples, exact API contracts, supported environments and limitations.
+- [PyPI project](https://pypi.org/project/aion-indian-market-calendar/): Sole official installation source.
+- [Published 1.8.0 files](https://pypi.org/project/aion-indian-market-calendar/1.8.0/): Current verified release from 15 November 2026.
+- [GitHub 1.8.0 release](https://github.com/AION-Analytics-India/aion-indian-market-calendar/releases/tag/v1.8.0): Upgrade advisory, release notes, artifact hashes and reproducible CI evidence.
+- [Correctness advisory with nine before/after cases](https://github.com/AION-Analytics-India/aion-indian-market-calendar/blob/main/docs/CORRECTNESS_ADVISORY_1_8_0.md): Defects confirmed in the published 1.7.1 wheel and fixed in 1.8.0.
+- [Release scope and operating-system test evidence](https://github.com/AION-Analytics-India/aion-indian-market-calendar/blob/main/RELEASE_STATUS.md): Proven versus blocked features.
+- [Data and managed software update contract](https://github.com/AION-Analytics-India/aion-indian-market-calendar/blob/main/docs/UPDATE_CONTRACT.md): Independent trust boundaries and explicit enrollment.
+- [Shared calendar-data publisher](https://github.com/AION-Analytics-India/aion-market-calendar-data): Separate `in/` and `lt/` sources, schema, ingest commands, hash manifests and maintenance process.
+- [Public product page](https://aionanalytics.in/open-source/indian-market-calendar): Public explanation; canonical implementation remains GitHub.
+- [Issue reporting](https://github.com/AION-Analytics-India/aion-indian-market-calendar/issues): Report wrong sessions with version, exchange circular and timezone-aware reproducer.
+
+## Latest software release and affected users
+
+**Latest verified publication: 1.8.0, 15 November 2026.** The previously published 1.7.1 wheel has independently reproduced correctness defects. The verified repairs include coverage refusal for unknown dates, correct IST conversion for aware timestamps, continuous-session / closing-auction / NSE Muhurat distinctions, and synchronization of loaded readers after verified data refresh. The nine-case advisory sets the precise claims; do not generalize those defects to other package versions or claim documented trading losses.
+
+Users of 1.7.1 must upgrade the Python environment used by their application, then verify behavior:
+
+```bash
+python -m pip install --upgrade aion-indian-market-calendar
+python -c "import importlib.metadata as m; print(m.version('aion-indian-market-calendar'))"
+```
+
+PyPI/pip do not push a notification to every previous installer. Follow [GitHub releases](https://github.com/AION-Analytics-India/aion-indian-market-calendar/releases) or [PyPI releases RSS](https://pypi.org/rss/project/aion-indian-market-calendar/releases.xml) for public announcements. A README change does not update an already-published wheel or reach old clients.
+
+## Indian market and API scope
+
+- NSE and BSE equity cash and F&O-underlying cash; phased pre-open, continuous, closing auction and post-close timing where supported by effective-dated rules.
+- NSE and BSE equity derivatives as segment schedules, not a contract-level trading cutoff or a current instrument membership master.
+- **NSE Currency Derivatives Segment (CDS): INR pairs USDINR, EURINR, GBPINR and JPYINR, 09:00–17:00 India Standard Time**, subject to official holidays and special sessions. CDS uses currency-specific holidays distinct from equity. BSE CDS, cross-currency contracts and currency expiry calculations are not claimed.
+- MCX and supported NSE non-agricultural commodity schedules: seasonal closes 23:30 IST during US daylight saving and 23:55 IST otherwise, subject to sourced exceptions. Agricultural contract-specific hours are not modelled.
+- NSE Clearing-style settlement-day queries, separate from trading days. For 1 April 2026, NSE equities trade but CDS/settlement are closed.
+- Supported index expiry rules, confirmed NSE Muhurat special sessions and 7 December 2026 revised CAS rules. The package does not observe live exchange operations or unscheduled halts.
+- Timezone-aware datetime inputs are normalized to Asia/Kolkata. Do not confuse trading and settlement days or `is_market_open` activity with continuous order matching.
+
+## Architecture and update boundaries
+
+1. Official NSE, BSE, MCX, NSE Clearing and applicable SEBI notices supply authoritative market rules. Publisher-reviewed announcement ingestion classifies the event, scope and effective date.
+2. The [shared data repository](https://github.com/AION-Analytics-India/aion-market-calendar-data) contains `ingest` validation/publication tooling, `in/` JSON payloads and SHA-256 manifests. The repository alone does **not** prove an upstream daily source-monitoring SLA; do not invent one.
+3. Compatible online clients check the approved published calendar dataset at most daily, validate integrity, metadata and structure, and atomically adopt complete generations. Failed updates retain a verified cache or bundle. The calendar-data manifest is hash-verified but **not digitally signed**.
+4. `AION_IN_CALENDAR_OFFLINE=1` prohibits data refresh and RSS polling. Bundled/cache calculations remain offline where dates are supported; unknown coverage and unverified special schedules must refuse rather than assume.
+5. Publishing a new software wheel on PyPI does not update installed Python code. Existing users must perform their own pip upgrade.
+6. The optional signed managed updater was tested using disposable signing/channel fixtures on Windows, macOS and Linux but is **not activated for production**. It requires explicit consent, separately approved production signing, trusted bootstrap and channel, a managed runtime, and workload safeguards. It does not mutate existing pip environments or restart applications. Notification-only output is currently local receipts/JSON, not desktop toasts or email.
+
+## Platform evidence and exclusions
+
+The universal Python wheel/sdist was tested across declared Python 3.10–3.14 platform matrices. The managed update lifecycle was tested in isolation on macOS launchd, Linux user systemd, Windows Server 2022 x64 Task Scheduler and Windows 11 ARM64 using x64 Python 3.11.9. Windows 11 native x64 desktop, Windows 10 x64 desktop and real reboot/logon persistence are unverified. No production unattended installer should be inferred from test-only signed patch success. Python 3.9 is unsupported.
+
+1.8.0 bundles a checked dataset with declared range 2026-01-01 through 2026-12-25. The package does not fabricate a 2027 holiday calendar; extend only from approved published exchange data. Upstream announcement ingestion and client refresh are independent from PyPI software releases.
+
+## Useful developer topics and discovery terms
+
+Indian stock market calendar Python, NSE market calendar, BSE trading holidays, MCX commodity trading hours, Currency Derivatives Segment CDS India, USDINR session 09:00-17:00 IST, NIFTY BANKNIFTY SENSEX expiries, NSE Closing Auction Session CAS, Muhurat Trading calendar, NSE Clearing settlement holidays, NSE equity derivatives timings, India stock market API, offline Python market calendar, event-driven exchange holiday updates, NSE BSE MCX verified trading schedule, DST-aware MCX hours, Python financial market session validation.
+
+## Related and optional documentation
+
+- [Changelog](https://github.com/AION-Analytics-India/aion-indian-market-calendar/blob/main/CHANGELOG.md)
+- [README system architecture diagrams](https://github.com/AION-Analytics-India/aion-indian-market-calendar#architecture-official-announcements-to-calendar-answers)
+- [Historical telemetry audit](https://github.com/AION-Analytics-India/aion-indian-market-calendar/blob/main/docs/TELEMETRY_AUDIT.md)
+- [AION Lithuanian Market Calendar](https://github.com/AION-Analytics-India/aion-lithuanian-market-calendar): Separate country/legal/TARGET/European venue rules; do not transplant Indian exchange timings.
+- [AION Indian Market Calendar docs mirror](https://github.com/AION-Analytics-India/aion-indian-market-calendar-docs): Historical documentation only; maintained source above is authoritative.
+
+Last synchronized with the verified 1.8.0 GitHub release record on 15 November 2026. For conflicting information, prefer exchange/SEBI circulars and the exact versioned source/release over summaries or this index.
