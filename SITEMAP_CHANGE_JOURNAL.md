@@ -122,3 +122,7 @@ Proof/documentation-only follow-up for CAL-RELEASE/CAL-DOCS. No runtime/dependen
 ## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
 
 CAL-STORE native error boundary corrected without changing store topology, rule/session calculations or deployment. Updated platform/error proof and required regression coverage. Retired unrelated implementation anecdote removed from active public module documentation; Git history retained. No proprietary model code or production store accessed.
+
+2026-11-15: review scope: IN-UPDATE/IN-DOCS: review-only user-visible notifications and source-labeled architecture.
+
+Review-only local signed-offer notification boundary, no changes to the frozen package or calendar API.

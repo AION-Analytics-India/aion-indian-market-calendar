@@ -120,3 +120,5 @@ Final scan found obsolete tag-triggered release guidance and local-only tutorial
 ## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
 
 Final native run43619699929 found an actual Windows3.13 concurrent refresh failure: verified adoption by one peer, another os.open reports errno13 without winerror. CPython calls CRT _wopen and reports errno; Microsoft documents sharing errors under EACCES. Added Windows-only bounded handling, preserving POSIX refusal and five-second timeout. Source/package artifacts must be rebuilt again; earlier candidates remain superseded evidence. No production change.
+
+2026-11-15 review only: signed offer -> local CLI notice/acknowledgment with optional native OS delivery. No default activation or production channel. Frozen correctness tag untouched.

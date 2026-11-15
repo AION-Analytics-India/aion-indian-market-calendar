@@ -46,7 +46,7 @@ def config(root: Path) -> dict:
     p = root / 'SUPERVISOR.json'
     private_file(p)
     doc = json.loads(p.read_text())
-    if doc.get('root') != str(root) or doc.get('schema_version') != 1:
+    if doc.get('project',PROJECT) != PROJECT or doc.get('root') != str(root) or doc.get('schema_version') != 1:
         raise ValueError('Managed ownership record mismatch')
     return doc
 
@@ -176,7 +176,9 @@ def check(root: Path, *, scheduled: bool = False) -> dict:
     if doc['version'] == u.state()['version']:
         return {'status': 'up_to_date', 'installed': u.state()['version']}
     if not cfg['automatic_installation']:
-        return {'status': 'update_available', 'installed': u.state()['version'], 'available': doc['version']}
+        from . import update_notice
+        notice = update_notice.offer(root, PROJECT, u.state()['version'], doc['version'], cfg.get('desktop_notifications',False))
+        return {'status': 'update_available', **notice}
     admission(cfg)
     try:
         with workload(root, exclusive=True):
@@ -256,7 +258,7 @@ def setup(args) -> dict:
         raise ValueError('Bootstrap approval must match the installed candidate')
     request={'policy':policy,'pins':pins,'constraints':constraints,'admission':admission_doc,
              'bootstrap':args.approved_sha256,'original_version':installed,'original_environment':sys.prefix,
-             'automatic_installation':args.enable_auto_install,
+             'automatic_installation':args.enable_auto_install, 'desktop_notifications':getattr(args,'desktop_notifications',False),
              'service_directory':str(args.service_directory.absolute()) if args.service_directory else None}
     setup_contract=hashlib.sha256(json.dumps(request,sort_keys=True).encode()).hexdigest()
     if args.root.exists():
@@ -274,9 +276,9 @@ def setup(args) -> dict:
     trust, trust_state = verify_trust(trust_raw, policy, {})
     release_raw = fetch_bytes(policy['channel_url'], max_bytes=MAX_MANIFEST_BYTES, network_authorized=True)
     verify_release(release_raw, trust, policy, installed)
-    cfg = {'schema_version': 1, 'root': str(args.root), 'policy': policy, 'dependency_pins': pins,
+    cfg = {'schema_version': 1, 'project': PROJECT, 'root': str(args.root), 'policy': policy, 'dependency_pins': pins,
            'constraints': constraints, 'enabled': False, 'automatic_installation': args.enable_auto_install,
-           'offline': False, 'original_version': installed, 'original_environment': sys.prefix,
+           'desktop_notifications':getattr(args,'desktop_notifications',False), 'offline': False, 'original_version': installed, 'original_environment': sys.prefix,
            'admission': admission_doc, 'created_at': time.time(), 'uninstalled': False,
            'setup_contract':setup_contract}
     if os.name == 'nt':
@@ -325,9 +327,11 @@ def status(root: Path) -> dict:
 def main() -> int:
     from .update_supervision import Service
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('operation', choices=['setup', 'start', 'stop', 'status', 'disable', 'uninstall', 'check', 'worker', 'run', 'rollback', 'offline'])
+    ap.add_argument('operation', choices=['setup', 'start', 'stop', 'status', 'disable', 'uninstall', 'check', 'worker', 'run', 'rollback', 'offline', 'notice', 'acknowledge'])
     ap.add_argument('--root', type=Path, required=True)
     ap.add_argument('--policy', type=Path)
+    ap.add_argument('--desktop-notifications',action='store_true')
+    ap.add_argument('--notice-version')
     ap.add_argument('--consent', action='store_true')
     ap.add_argument('--enable-auto-install', action='store_true')
     ap.add_argument('--bootstrap-manifest', type=Path)
@@ -350,6 +354,11 @@ def main() -> int:
         if not all((args.policy, args.bootstrap_manifest, args.approved_sha256, args.wheelhouse)):
             ap.error('setup requires policy and independently hash-approved local bootstrap wheels')
         result = setup(args)
+    elif args.operation in ('notice','acknowledge'):
+        from . import update_notice
+        config(args.root)
+        with operation(args.root):
+            result = update_notice.read(args.root) if args.operation == 'notice' else update_notice.acknowledge(args.root,args.notice_version)
     elif args.operation == 'status':result = status(args.root)
     elif args.operation == 'run':
         if command[:1] == ['--']:command = command[1:]

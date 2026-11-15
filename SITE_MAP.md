@@ -267,3 +267,7 @@ Final source-consistency follow-up updates contributor manual-release policy and
 ## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
 
 CAL-STORE now recognizes Windows CRT errno-only EACCES as bounded sharing/permission contention, per CPython _wopen/SetFromErrno and Microsoft CRT documentation. No POSIX broadening, stale-lock theft, permissions change or changed deadline. Existing concurrency assertion remains mandatory; deterministic persistent-denial tests added. Calendar rule/data and managed-update graph unchanged.
+
+IN-UPDATE/IN-DOCS: review-only user-visible notifications and source-labeled architecture.
+
+Review-only src/aion_indian_market_calendar/update_notice.py -> authenticated release offer -> local acknowledgment and optional OS notification; tests/test_update_notice.py. No change to the v1.8.0 artifacts.

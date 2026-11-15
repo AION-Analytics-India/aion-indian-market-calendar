@@ -361,3 +361,7 @@ Report the package version, Python/OS, exchange/segment, timezone-aware timestam
 actual/expected result, public circular and minimal reproducer through
 [GitHub issues](https://github.com/AION-Analytics-India/aion-indian-market-calendar/issues).
 Do not include credentials, account records or proprietary trading inputs.
+
+### Proposed notification support (not part of published 1.8.0)
+
+The review implementation adds optional desktop notifications at consent-based setup and a headless notice/acknowledge command. A verified signed release is required before offering an upgrade. Native desktop display, production key custody, trusted bootstrap and rollout require separate acceptance. Existing pip environments are not automatically enrolled.
