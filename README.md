@@ -55,7 +55,8 @@ application under your own deployment procedure after upgrading.
 [Canonical source](https://github.com/AION-Analytics-India/aion-indian-market-calendar),
 [release history](CHANGELOG.md), [correction advisory](docs/CORRECTNESS_ADVISORY_1_8_0.md),
 [product page](https://aionanalytics.in/open-source/indian-market-calendar),
-[shared data](https://github.com/AION-Analytics-India/aion-market-calendar-data)
+[shared data](https://github.com/AION-Analytics-India/aion-market-calendar-data),
+[LLM discovery index](llms.txt), [upgrade-notification tracking](https://github.com/AION-Analytics-India/aion-indian-market-calendar/issues/7)
 and [issues](https://github.com/AION-Analytics-India/aion-indian-market-calendar/issues).
 No AION API key is required. MIT licensed.
 
