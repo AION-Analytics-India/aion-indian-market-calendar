@@ -5,15 +5,50 @@ holidays, intraday phases and selected derivative expiries in India. No API key
 is required. This is not a live exchange-status feed, broker interface, order
 execution service or compliance guarantee. Exchange notices remain authoritative.
 
+## Latest release: 1.8.0 (15 November 2026)
+
+**Upgrade advisory for users of 1.7.1.** The published 1.8.0 wheel and source
+distribution correct reproducible calendar-answer defects in 1.7.1. In the
+Python environment that actually runs your application, use:
+
+```bash
+python -m pip install --upgrade aion-indian-market-calendar
+python -c "import importlib.metadata as m; print(m.version('aion-indian-market-calendar'))"
+```
+
+Re-run your own schedule-critical checks and review the
+[nine-case correction advisory](docs/CORRECTNESS_ADVISORY_1_8_0.md).
+The [1.8.0 GitHub release](https://github.com/AION-Analytics-India/aion-indian-market-calendar/releases/tag/v1.8.0)
+and [PyPI 1.8.0](https://pypi.org/project/aion-indian-market-calendar/1.8.0/)
+give the publication and exact artifacts.
+
+| 1.8.0 change | Why it matters |
+| --- | --- |
+| Unsupported dates and incomplete calendar coverage fail closed | An unknown future trading date is not silently treated as open |
+| Timezone-aware timestamps are normalized to IST before selecting the calendar date | Cross-timezone calls no longer silently choose the wrong Indian trading day |
+| Continuous trading, closing auction and confirmed NSE Muhurat windows are distinguished | A session being active does not imply normal continuous order matching |
+| Verified data refresh is visible to already-loaded calendar readers | Accepted exchange updates do not require a new Python wheel |
+| NSE CDS INR-pair hours and holidays remain distinct from NSE equity | `USDINR`, `EURINR`, `GBPINR` and `JPYINR`: **09:00-17:00 IST** on applicable sessions |
+
+**How users hear about releases:** GitHub release subscribers and consumers of the
+[PyPI releases RSS feed](https://pypi.org/rss/project/aion-indian-market-calendar/releases.xml)
+can follow announcements. PyPI/pip cannot push a message to every previous
+installer. A 1.7.1 install cannot acquire the new software-update checker
+retroactively. Normal `pip install` does not activate unattended code updates.
+Version 1.8.0 provides tested but **not production-activated** opt-in updater
+components; they are not a promise of automatic upgrades on ordinary pip
+environments.
+
 ## Install or manually upgrade
 
 ```bash
 python -m pip install --upgrade aion-indian-market-calendar
 ```
 
-This source describes **1.8.0**, a calendar-correctness release. Check
-[PyPI for available files and the actual publication date](https://pypi.org/project/aion-indian-market-calendar/1.8.0/).
-A source branch or this version heading alone is not proof of publication.
+**Version 1.8.0 was published on 15 November 2026.** See
+[PyPI's release files](https://pypi.org/project/aion-indian-market-calendar/1.8.0/)
+and the [GitHub release record](https://github.com/AION-Analytics-India/aion-indian-market-calendar/releases/tag/v1.8.0)
+for the published artifact identities.
 Use the Python interpreter that runs your application; restart/retest that
 application under your own deployment procedure after upgrading.
 
@@ -53,15 +88,17 @@ python -c "import importlib.metadata as m; print(m.version('aion-indian-market-c
 
 | Capability | macOS | Linux | Windows |
 | --- | --- | --- | --- |
-| Calendar library, Python 3.10-3.14 | Native wheel/sdist checks | Native wheel/sdist checks | Native x64 wheel/sdist checks |
-| Optional managed-updater lifecycle | launchd tested in isolation | User systemd tested in isolation | Task Scheduler tested on Server 2022 x64; rollout paused |
+| Calendar library, Python 3.10-3.14 | Native wheel/sdist checks | Native wheel/sdist checks | Windows Server 2022 x64; plus Windows 11 ARM64 with x64 Python 3.11.9 (wheel and sdist) |
+| Optional managed-updater lifecycle | launchd tested in isolation | User systemd tested in isolation | Task Scheduler 17/17 on Server 2022 x64 and Windows 11 ARM64/x64 Python; rollout paused |
 | Production automatic code installation | Not activated | Not activated | Paused; not activated |
 
 One universal wheel serves these tested library platforms. Python 3.9 is
 unsupported. Linux managed setup requires working `venv`/`ensurepip`; it refuses
-an installation missing those facilities. Windows 11 normal-user acceptance
-and real reboot/logon acceptance remain unverified. These optional-updater
-gates do not negate the separately tested calendar library corrections.
+an installation missing those facilities. Native Windows 11 x64 desktop, Windows 10 x64 desktop, ordinary-user
+consumer acceptance and real reboot/logon persistence remain unverified.
+The Windows 11 runner used ARM64 hardware and an x64 Python interpreter; that is
+not native x64 desktop acceptance. These optional-updater gates do not negate
+the separately tested calendar library corrections.
 See [build-time evidence and scope](RELEASE_STATUS.md).
 
 ## Covered dates and markets
@@ -162,6 +199,88 @@ session facts; intervening weekdays and empty calendars remain unknown.
 The caller remains responsible for completeness of custom records.
 `holidays(year=...)` is a list for the covered portion, not a claim of a full
 calendar year. `covers()` reports the precise interval.
+
+## Architecture: official announcements to calendar answers
+
+This is an **exchange-announcement-driven calendar**, not a static list of
+weekdays. Exchange circulars and official calendars are the authority; AION's
+[shared data repository](https://github.com/AION-Analytics-India/aion-market-calendar-data)
+is the controlled publication surface for checked event and session records.
+The source repository contains an `ingest` verification/publishing tool; it does
+not by itself establish a guaranteed daily official-source monitoring SLA.
+**Clients** check for an updated published dataset at most once per day.
+Changes in official market rules require source adjudication before publication.
+
+```mermaid
+flowchart TD
+  A["NSE, BSE, MCX, NSE Clearing and applicable SEBI notices"] --> B["Publisher: review source, event, segment and effective date"]
+  B --> C["Ingest: provenance, schema and consistency validation"]
+  C --> D["Published in/ JSON plus SHA-256 manifest"]
+  D --> E["Client: bounded online check (at most daily)"]
+  E --> F{"Complete generation verifies?"}
+  F -->|Yes| G["Atomic adoption of validated local cache"]
+  F -->|No| H["Retain previously validated cache / bundled data"]
+  I["Bundled release dataset"] --> H
+  G --> J["Calendar engine: timestamps converted to IST"]
+  H --> J
+  J --> K["Trading day, phases, CDS, MCX, Muhurat, settlement, expiry"]
+  K --> L["Schedulers, backtests, market data and risk controls"]
+```
+
+The manifest binds downloaded files by SHA-256 and validates the dataset
+structure. **The calendar-data manifest is hash-verified, not digitally
+signed.** Offline mode prohibits refresh and uses a verified cached/bundled
+generation. If the date or special-session information is unavailable, the
+calendar refuses unsupported answers rather than inventing a trading schedule.
+Official exchange circulars supersede the library.
+
+### Two different update paths
+
+```mermaid
+flowchart LR
+  R["Official change published into verified calendar data"] --> D["Compatible installed clients: hash-verified data refresh"]
+  P["New Python wheel published on PyPI"] --> M["Existing pip users: manual upgrade in the application environment"]
+  S["Separately signed release channel: NOT PRODUCTION-ACTIVATED"] -.-> O["Explicitly enrolled updater with OS scheduler"]
+  O -.-> I["Isolated managed runtime; tests, promotion, rollback"]
+  I -.-> A["Only applications launched via the managed runtime"]
+```
+
+**Software patches are not calendar-data refreshes.** A PyPI upload alone
+does not replace installed code, install a background task or relaunch trading
+applications. The signed, opted-in patch updater has passed disposable
+lifecycle tests but production signing, trusted bootstrap/channel and remaining
+Windows desktop gates are open. See
+[update contract](docs/UPDATE_CONTRACT.md) and
+[release scope](RELEASE_STATUS.md).
+
+## Benefits, use cases and scope
+
+- **Indian exchange session validation:** NSE, BSE, MCX and supported NSE CDS
+  INR pairs, with market-specific holidays and effective-dated timing rules.
+- **Trading is not settlement:** NSE Clearing settlement dates and CDS holidays
+  cannot be inferred from cash-equity trading status.
+- **Intraday-aware scheduling:** Separate pre-open, continuous trading,
+  closing auction, post-close and confirmed special sessions.
+- **Reproducible research:** Exchange-specific historical checks with explicit
+  timezone conversion and known coverage; useful for backtests, event
+  intelligence, data pipelines, Python fintech applications and algo-trading
+  risk gates.
+- **Offline operation:** A bundled verified dataset works without a hosted API,
+  user account or subscription; compatible verified datasets can refresh without
+  a package rebuild when network use is permitted.
+
+**Not included:** live exchange halt detection, broker connectivity, order
+execution, symbol-to-segment or contract master, individual derivatives-contract
+cutoff verification, BSE CDS, cross-currency contracts, per-contract MCX
+agricultural hours, guaranteed coverage beyond verified official sources or
+automatic upgrades of arbitrary Python environments.
+
+**Developer discovery:** Indian market calendar Python; NSE market timings;
+NSE trading holidays; BSE market calendar; MCX commodity session calendar;
+NSE currency derivatives CDS 09:00-17:00 IST; USDINR market hours; NIFTY
+expiry calendar; Indian market settlement calendar; Muhurat trading session;
+closing auction session CAS; Indian stock market holiday API; Python trading
+session validator; DST-aware MCX market hours; offline market calendar.
 
 ## Calendar data refresh and Python software updates
 
