@@ -267,3 +267,12 @@ Final source-consistency follow-up updates contributor manual-release policy and
 ## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
 
 CAL-STORE now recognizes Windows CRT errno-only EACCES as bounded sharing/permission contention, per CPython _wopen/SetFromErrno and Microsoft CRT documentation. No POSIX broadening, stale-lock theft, permissions change or changed deadline. Existing concurrency assertion remains mandatory; deterministic persistent-denial tests added. Calendar rule/data and managed-update graph unchanged.
+
+## 2026-11-15: CAL-CI-ARTIFACTS Windows consumer test branch
+
+The branch-only workflow .github/workflows/calendar-desktop-check.yml follows
+GitHub push -> Windows 11 Arm workstation (x64 Python) and x64 Server control
+-> approved wheel/sdist hashes -> library and real user-scheduler fixtures ->
+bounded CI receipts. No self-hosted runner, publication or production channel.
+Windows 10 desktop and cross-boot persistence require separate physical or
+persistent guest evidence.

@@ -1,0 +1,98 @@
+name: Calendar frozen Windows consumer checks
+on:
+  push:
+    branches: [ci/calendar-desktop-20261115]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  frozen:
+    if: github.repository == 'AION-Analytics-India/aion-indian-market-calendar'
+    name: Frozen package and scheduler (${{ matrix.image }}, Python x64)
+    runs-on: ${{ matrix.image }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [windows-11-arm, windows-2022]
+    env:
+      FROZEN: 711447e748eaffa658aeb5fc053fff4155386e77
+      EXPECT_IMAGE: ${{ matrix.image }}
+      AION_IN_CALENDAR_OFFLINE: '1'
+      PYTHONUTF8: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 711447e748eaffa658aeb5fc053fff4155386e77
+          persist-credentials: false
+      - name: Identify actual Windows edition and hardware
+        shell: pwsh
+        run: |
+          $os = Get-CimInstance Win32_OperatingSystem
+          $cpu = @(Get-CimInstance Win32_Processor)[0]
+          $identity = [ordered]@{edition=$os.Caption; product_type=[int]$os.ProductType; build=[int]$os.BuildNumber; cpu_arch_code=[int]$cpu.Architecture; last_boot_utc=$os.LastBootUpTime.ToUniversalTime().ToString('o'); hosted_runner_label=$env:EXPECT_IMAGE; real_reboot_exercised=$false}
+          New-Item -ItemType Directory -Path receipt | Out-Null
+          $identity | ConvertTo-Json | Tee-Object -FilePath receipt/identity.json
+          if ($env:EXPECT_IMAGE -eq 'windows-11-arm' -and ($os.ProductType -ne 1 -or $os.Caption -notmatch 'Windows 11' -or $cpu.Architecture -ne 12)) { throw 'Not the expected Windows 11 Arm64 workstation' }
+          if ($env:EXPECT_IMAGE -eq 'windows-2022' -and ($os.ProductType -ne 3 -or $cpu.Architecture -ne 9)) { throw 'Not the expected x64 server control' }
+          if ((git rev-parse HEAD) -ne $env:FROZEN) { throw 'Frozen source mismatch' }
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+          architecture: x64
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: calendar-candidate
+          path: accepted
+          run-id: 43620359086
+          github-token: ${{ github.token }}
+      - name: Check original release bytes and x64 interpreter
+        shell: pwsh
+        run: |
+          $wheel='accepted/dist/aion_indian_market_calendar-1.8.0-py3-none-any.whl'
+          $sdist='accepted/dist/aion_indian_market_calendar-1.8.0.tar.gz'
+          if ((Get-FileHash $wheel).Hash -ne '438378a6debea85b1e159e1671043beb3c2862fc3190bf2da0335e86fab8aaf3') { throw 'Wrong release wheel' }
+          if ((Get-FileHash $sdist).Hash -ne 'fd1f40a0e0ad22a763ab179998b0b805be3491fcb96175cb2d38fd213b28bcb5') { throw 'Wrong release sdist' }
+          python -I -c "import sysconfig,sys; print(sys.version,sysconfig.get_platform()); assert sysconfig.get_platform()=='win-amd64'"
+      - name: Install and test both original distributions
+        shell: pwsh
+        run: |
+          python scripts/verify_release_artifacts.py test --dist accepted/dist --inventory accepted/ci/BUILD_INVENTORY.json --source-sha $env:FROZEN --scope library --output library
+          $rc=$LASTEXITCODE
+          if ($rc) { Get-ChildItem library -Filter '*-tests.log' | ForEach-Object { Get-Content $_.FullName -Tail 24 }; exit $rc }
+          Copy-Item library/RESULT.json receipt/library.json
+      - name: Prepare disposable updater dependencies
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'; $PSNativeCommandUseErrorActionPreference=$true
+          New-Item -ItemType Directory -Path fixture/artifacts,fixture/lifecycle-dist,fixture/repair-wheelhouse -Force | Out-Null
+          $wheel=(Get-Item accepted/dist/*.whl).FullName
+          Copy-Item $wheel fixture/lifecycle-dist
+          python -m venv fixture/driver
+          $py=(Get-Item fixture/driver/Scripts/python.exe).FullName
+          & $py -m pip install "${wheel}[test,updates]"
+          & $py -m pip download --only-binary=:all: --no-deps aion-indian-market-calendar==1.7.1 -d fixture/artifacts
+          if ((Get-FileHash (Get-Item fixture/artifacts/*.whl)).Hash -ne '02ff1daa1a715a6cfd67401f65e9c70f88406128d86208921f8318fc81fd6bd7') { throw 'Wrong bootstrap wheel' }
+          & $py -m pip download --only-binary=:all: 'cryptography>=45,<47' 'packaging>=24,<27' pytz tzdata -d fixture/repair-wheelhouse
+      - name: Run actual user scheduler with the synthetic signed channel
+        shell: pwsh
+        run: |
+          $lab=Join-Path $env:LOCALAPPDATA ('calendar-acceptance-'+[Guid]::NewGuid().ToString('N'))
+          & ./fixture/driver/Scripts/python.exe scripts/verify_managed_lifecycle.py fixture $lab
+          $rc=$LASTEXITCODE
+          $path=Join-Path $lab 'RESULTS.json'
+          if (Test-Path $path) {
+            $r=Get-Content -Raw $path | ConvertFrom-Json
+            $summary=[ordered]@{exit_code=$rc; cases=@($r.cases | Select-Object case,result,managed_version,original_version); completed_cases=@($r.cases).Count; real_os_reboot='NOT_EXERCISED'; production_signing='NOT_EXERCISED'}
+            $summary | ConvertTo-Json -Depth 5 | Tee-Object -FilePath receipt/scheduler.json
+            if ($rc -eq 0 -and ($r.cases.case -notcontains 'unattended_os_scheduled_signed_patch_runs_in_managed_application' -or $r.cases.case -notcontains 'uninstall_removes_owned_supervisor_files_preserves_runtime_receipts')) { throw 'Missing signed-upgrade or teardown proof' }
+          } elseif ($rc -eq 0) { throw 'No scheduler receipt' }
+          exit $rc
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: desktop-check-${{ matrix.image }}
+          path: receipt/*.json
+          retention-days: 7
+          if-no-files-found: warn
