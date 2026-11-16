@@ -122,3 +122,6 @@ Proof/documentation-only follow-up for CAL-RELEASE/CAL-DOCS. No runtime/dependen
 ## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
 
 CAL-STORE native error boundary corrected without changing store topology, rule/session calculations or deployment. Updated platform/error proof and required regression coverage. Retired unrelated implementation anecdote removed from active public module documentation; Git history retained. No proprietary model code or production store accessed.
+
+
+2026-11-16: CAL-PUBLIC-DOCS publication evidence added at docs/PUBLICATION_STATUS_20261116.md; current release status in SITE_MAP.md reconciled to live PyPI. Historical release/candidate evidence retained. No runtime component, API, data-flow edge or automatic installer activated.

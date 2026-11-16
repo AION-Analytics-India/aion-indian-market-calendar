@@ -120,3 +120,8 @@ Final scan found obsolete tag-triggered release guidance and local-only tutorial
 ## 2026-11-14T17:16:21.618106+00:00 | Windows CRT boundary closure
 
 Final native run43619699929 found an actual Windows3.13 concurrent refresh failure: verified adoption by one peer, another os.open reports errno13 without winerror. CPython calls CRT _wopen and reports errno; Microsoft documents sharing errors under EACCES. Added Windows-only bounded handling, preserving POSIX refusal and five-second timeout. Source/package artifacts must be rebuilt again; earlier candidates remain superseded evidence. No production change.
+
+
+## 2026-11-16 - public documentation closure
+
+Verified the published 1.8.0 registry record and current canonical README. Corrected stale release/coverage wording in SITE_MAP.md and added docs/PUBLICATION_STATUS_20261116.md. Preserved original candidate journals and immutable release artifacts. Provider readback and remaining description-metadata limits are documented separately from code validation. NO_MAP_IMPACT runtime: no code, data, updater activation or deployment topology changed; documentation ownership and proof are mapped.
